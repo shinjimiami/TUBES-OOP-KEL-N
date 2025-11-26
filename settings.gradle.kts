@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "TUBES-OOP-KEL-N-"
-include("app", "list", "utilities")
+include("app")
