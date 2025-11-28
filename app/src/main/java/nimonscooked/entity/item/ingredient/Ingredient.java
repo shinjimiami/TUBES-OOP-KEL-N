@@ -1,4 +1,4 @@
-package entity.item.ingredient;
+package nimonscooked.entity.item.ingredient;
 
 public abstract class Ingredient extends Item implements Preparable{
     protected IngredientState currentState;
@@ -27,6 +27,24 @@ public abstract class Ingredient extends Item implements Preparable{
 
     public void setCurrentState(IngredientState state) {
         this.currentState = state;
+    }
+
+    // berfungsi supaya nanti tinggal direplace
+    @Override
+    public boolean canBeChopped() {
+        return false;
+    }
+
+    // berfungsi supaya nanti tinggal direplace
+    @Override
+    public boolean canBeCooked() {
+        return false;
+    }
+
+    // berfungsi supaya nanti tinggal direplace
+    @Override
+    public boolean canBePlacedOnPlate() {
+        return false;
     }
 
     @Override

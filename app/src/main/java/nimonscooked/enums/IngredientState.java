@@ -1,4 +1,4 @@
-package entity.item.ingredient;
+package nimonscooked.enums;
 
 public enum IngredientState {
     RAW,
