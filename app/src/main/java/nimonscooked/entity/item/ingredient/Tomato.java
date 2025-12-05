@@ -1,8 +1,10 @@
 package nimonscooked.entity.item.ingredient;
 
+import nimonscooked.enums.IngredientState;
+
 public class Tomato extends Ingredient{
-    public Tomato(String id, float x, float y, IngredientState initialState) {
-        super(id, "Tomato", x, y, initialState);
+    public Tomato(String id, float x, float y, IngredientState currentState) {
+        super(id, "Tomato", x, y, currentState);
     }
 
     @Override

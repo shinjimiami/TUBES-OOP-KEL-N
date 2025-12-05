@@ -1,5 +1,7 @@
 package nimonscooked.interfaces;
 
+import nimonscooked.enums.IngredientState;
+
 public interface Preparable {
     boolean canBeChopped();
     boolean canBeCooked();
@@ -7,4 +9,7 @@ public interface Preparable {
 
     void chop();
     void cook();
+
+    IngredientState getState();
+    String getName();
 }

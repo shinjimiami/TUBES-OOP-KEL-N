@@ -1,8 +1,10 @@
 package nimonscooked.entity.item.ingredient;
 
+import nimonscooked.enums.IngredientState;
+
 public class Cheese extends Ingredient{
-    public Cheese(String id, float x, float y, IngredientState initialState) {
-        super(id, "Cheese", x, y, initialState);
+    public Cheese(String id, float x, float y, IngredientState currentState) {
+        super(id, "Cheese", x, y, currentState);
     }
 
     @Override
@@ -19,4 +21,5 @@ public class Cheese extends Ingredient{
     public boolean canBePlacedOnPlate(){
         return currentState == IngredientState.CHOPPED;
     }
+
 }
