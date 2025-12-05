@@ -18,7 +18,8 @@ public class Bun extends Ingredient {
 
     @Override
     public boolean canBePlacedOnPlate(){
-        return currentState == IngredientState.CHOPPED;
+        // return currentState == IngredientState.CHOPPED;
+        return currentState == IngredientState.RAW;
     }
     
 }
