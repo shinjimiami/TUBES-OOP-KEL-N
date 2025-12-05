@@ -1,5 +1,9 @@
 package nimonscooked.entity.item.ingredient;
 
+import nimonscooked.interfaces.Preparable;
+import nimonscooked.entity.item.Item;
+import nimonscooked.enums.IngredientState;
+
 public abstract class Ingredient extends Item implements Preparable{
     protected IngredientState currentState;
     // protected IngredientState finalState;
@@ -9,19 +13,7 @@ public abstract class Ingredient extends Item implements Preparable{
         this.currentState = initialState;
     }
 
-    public void requestCut(){
-        if (currentState.canBeChopped()){
-            currentState.chop(this);
-        }
-    }
-
-    public void requestCook(){
-        if (currentState.canBeCooked()){
-            currentState.cook(this);
-        }
-    }
-
-    public IngredientState getCurrentState() {
+    public IngredientState getState() {
         return currentState;
     }
 
@@ -31,21 +23,15 @@ public abstract class Ingredient extends Item implements Preparable{
 
     // berfungsi supaya nanti tinggal direplace
     @Override
-    public boolean canBeChopped() {
-        return false;
-    }
+    public abstract boolean canBeChopped();
 
     // berfungsi supaya nanti tinggal direplace
     @Override
-    public boolean canBeCooked() {
-        return false;
-    }
+    public abstract boolean canBeCooked();
 
     // berfungsi supaya nanti tinggal direplace
     @Override
-    public boolean canBePlacedOnPlate() {
-        return false;
-    }
+    public abstract boolean canBePlacedOnPlate();
 
     @Override
     public void chop() {
@@ -57,7 +43,11 @@ public abstract class Ingredient extends Item implements Preparable{
     @Override
     public void cook() {
         if (canBeCooked()) {
-            currentState = IngredientState.COOKED;
+            if(currentState == IngredientState.CHOPPED){
+                currentState = IngredientState.COOKED;
+            } else if(currentState == IngredientState.COOKED){
+                currentState = IngredientState.BURNED;
+            }
         }
     }
 }

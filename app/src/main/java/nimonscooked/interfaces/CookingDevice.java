@@ -1,5 +1,7 @@
 package nimonscooked.entity.item.kitchenutensil;
 
+import nimonscooked.interfaces.Preparable;
+
 public interface CookingDevice {
     boolean isPortable();
     int capacity();
@@ -7,5 +9,6 @@ public interface CookingDevice {
 
     void addIngredient(Preparable ingredient);
     void startCooking();
+    void stopCooking();
     void removeContents();
 }

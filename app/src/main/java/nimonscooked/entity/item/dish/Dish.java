@@ -1,12 +1,45 @@
 package nimonscooked.entity.item.dish;
 
-import nimonscooked.entity.item.ingredient.Preparable;
+import java.util.ArrayList;
+import java.util.List;
+import nimonscooked.enums.IngredientState;
+import nimonscooked.interfaces.Preparable;
 
-public abstract class Dish extends Item implements Preparable{
-    protected List<Preparable> components;
+public class Dish{
+    private final List<Preparable> components;
 
-    public Dish(String id, String name, float x, float y) {
-        super(id, name, x, y);
+    public Dish() {
+        this.components = new ArrayList<>();
+    }
+
+    public boolean addComponent(Preparable component) {
+        if(component == null){
+            return false;
+        }
+
+        if(component.getState() == IngredientState.RAW || component.getState() == IngredientState.BURNED) {
+            return false;
+        }
+
+        for(Preparable existingComponent : components){
+            if(existingComponent.getName().equals(component.getName())){
+                return false;
+            }
+        }
+
+        return components.add(component);
+    }
+
+    public List<Preparable> getComponents() {
+        return new ArrayList<>(components);
+    }
+
+    public boolean isEmpty() {
+        return components.isEmpty();
+    }
+
+    public void clearDish(){
+        components.clear();
     }
     
 }
