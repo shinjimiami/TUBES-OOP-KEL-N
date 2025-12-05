@@ -8,7 +8,7 @@ public abstract class Ingredient extends Item implements Preparable{
     protected IngredientState currentState;
     // protected IngredientState finalState;
 
-    public Ingredient(String id, String name, float x, float y, IngredientState initialState) {
+    public Ingredient(String id, String name, int x, int y, IngredientState initialState) {
         super(id, name, x, y);
         this.currentState = initialState;
     }

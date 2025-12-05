@@ -9,7 +9,7 @@ public class Plate extends KitchenUtensils {
     private boolean isDirty = false;
     private Dish dish;
 
-    public Plate(String id, float x, float y) {
+    public Plate(String id, int x, int y) {
         super(id, "Plate", x, y, new ArrayList<Preparable>());
         this.dish = new Dish();
     }

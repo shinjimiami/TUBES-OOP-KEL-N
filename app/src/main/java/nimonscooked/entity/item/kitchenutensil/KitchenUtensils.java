@@ -7,7 +7,7 @@ import java.util.List;
 public abstract class KitchenUtensils extends Item {
     protected List<Preparable> contents;
     
-    public KitchenUtensils(String id, String name, float x, float y, List<Preparable> contents) {
+    public KitchenUtensils(String id, String name, int x, int y, List<Preparable> contents) {
         super(id, name, x, y);
         this.contents = contents;
     }

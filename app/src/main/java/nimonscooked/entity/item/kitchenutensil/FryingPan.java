@@ -10,7 +10,7 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
     private final int MAX_CAPACITY = 1;
     private boolean isCooking = false;
 
-    public FryingPan(String id, float x, float y) {
+    public FryingPan(String id, int x, int y) {
         super(id, "FryingPan", x, y, new ArrayList<Preparable>());
     }
 

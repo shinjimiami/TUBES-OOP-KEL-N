@@ -2,20 +2,20 @@
 package nimonscooked.entity.station;
 
 import nimonscooked.entity.item.Item;
-import nimonscooked.entity.station.ChefPlayer;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.Entity;
 
 public abstract class Station extends Entity {
     private boolean isOccupied;
     protected Item containedItem;
 
-    public Station(String id, String name, float x, float y) {
+    public Station(String id, String name, int x, int y) {
         super(id, name, x, y);
         this.isOccupied = false;
         this.containedItem = null;
     }
 
-    abstract void interact(ChefPlayer player);
+    abstract void interact(Chef player);
 
     public Item takeItem(){
         Item item = this.containedItem;

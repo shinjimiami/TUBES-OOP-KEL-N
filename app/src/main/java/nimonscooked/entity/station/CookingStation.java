@@ -4,7 +4,7 @@ import nimonscooked.entity.station.Station;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.enums.IngredientState;
 import nimonscooked.entity.item.kitchenutensil.FryingPan;
-import nimonscooked.entity.station.ChefPlayer;
+import nimonscooked.entity.Chef;
 import javax.swing.Timer;
 import java.util.List;
 
@@ -19,12 +19,12 @@ public class CookingStation extends Station {
     private int cookingStartTime = 0;
     private Preparable currentItem;
 
-    public CookingStation(String id, float x, float y) {
+    public CookingStation(String id, int x, int y) {
         super(id, "Cooking Station", x, y);
     }
 
     @Override
-    public void interact(ChefPlayer chefPlayer) {
+    public void interact(Chef chefPlayer) {
         if(this.containedItem == null && chefPlayer.getHeldItem() != null){
             super.placeItem(chefPlayer.takeItem());
             startCookingTimer();

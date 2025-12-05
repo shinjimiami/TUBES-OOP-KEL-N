@@ -3,7 +3,7 @@ package nimonscooked.entity.item.ingredient;
 import nimonscooked.enums.IngredientState;
 
 public class Lettuce extends Ingredient{
-    public Lettuce(String id, float x, float y, IngredientState currentState) {
+    public Lettuce(String id, int x, int y, IngredientState currentState) {
         super(id, "Lettuce", x, y, currentState);
     }
 

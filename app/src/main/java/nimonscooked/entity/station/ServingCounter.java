@@ -1,16 +1,17 @@
 package nimonscooked.entity.station;
 
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.kitchenutensil.Plate;
 import nimonscooked.entity.item.dish.Dish;
 
 public class ServingCounter extends Station {
 
-    public ServingCounter(String id, float x, float y) {
+    public ServingCounter(String id, int x, int y) {
         super(id, "Serving Counter", x, y);
     }
     
 	@Override
-	public void interact(ChefPlayer player) {
+	public void interact(Chef player) {
 		// placeholder
 	}    
 

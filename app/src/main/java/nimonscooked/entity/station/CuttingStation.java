@@ -1,6 +1,6 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.ChefPlayer;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.station.Station;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.enums.IngredientState;
@@ -16,12 +16,12 @@ public class CuttingStation extends Station {
     private int cuttingStartTime = 0;
     private int savedTime = 0;
 
-    public CuttingStation(String id, float x, float y) {
+    public CuttingStation(String id, int x, int y) {
         super(id, "Cutting Station", x, y);
     }
 
     @Override
-    public void interact(ChefPlayer player) {
+    public void interact(Chef player) {
         // cek apakah ada item di cutting station
         if(this.containedItem == null){
             if(player.getHeldItem() != null){ //menunggu update dari chefPlayer, ini berfungsi untuk ngecek apakah player pegang item atau nggak

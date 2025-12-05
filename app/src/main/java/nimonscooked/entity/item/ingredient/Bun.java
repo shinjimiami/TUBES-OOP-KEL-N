@@ -3,7 +3,7 @@ package nimonscooked.entity.item.ingredient;
 import nimonscooked.enums.IngredientState;
 
 public class Bun extends Ingredient {
-    public Bun(String id, float x, float y, IngredientState currentState) {
+    public Bun(String id, int x, int y, IngredientState currentState) {
         super(id, "Bun", x, y, currentState);
         // this.setImage(getItemImage("bun")); ini nanti aja tapi buat inget gambarnya
     }
