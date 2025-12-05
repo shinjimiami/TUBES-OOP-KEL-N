@@ -3,10 +3,13 @@ package nimonscooked.entity;
 public abstract class Entity{
     protected String id;
     protected String name;
-    protected float x;
-    protected float y;
+    protected int x;
+    protected int y;
 
-    public Entity(String id, String name, float x, float y) {
+    public BufferedImage image;
+    public boolean collision = false;
+    
+    public Entity(String id, String name, int x, int y) {
         this.id = id;
         this.name = name;
         this.x = x;
