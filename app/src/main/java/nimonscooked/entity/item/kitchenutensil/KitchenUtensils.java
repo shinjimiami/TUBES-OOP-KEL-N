@@ -12,12 +12,10 @@ public abstract class KitchenUtensils extends Item {
         this.contents = contents;
     }
 
-    // Tambahkan method ini agar ServingCounter bisa melihat isi piring
     public java.util.List<nimonscooked.interfaces.Preparable> getContents() {
         return contents;
     }
 
-    // Tambahkan method ini untuk mengosongkan piring setelah disajikan
     public void clearContents() {
         if (contents != null) {
             contents.clear();
