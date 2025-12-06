@@ -1,6 +1,6 @@
 package nimonscooked.entity.item.kitchenutensil;
 
-import nimonscooked.entity.item.kitchenutensil.CookingDevice;
+import nimonscooked.interfaces.CookingDevice;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.entity.item.kitchenutensil.KitchenUtensils;
 import java.util.ArrayList;

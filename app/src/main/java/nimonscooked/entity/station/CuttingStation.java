@@ -1,75 +1,83 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.ChefPlayer;
-import nimonscooked.entity.station.Station;
+import nimonscooked.entity.Chef; // Pastikan import Chef yang baru
 import nimonscooked.interfaces.Preparable;
-import nimonscooked.enums.IngredientState;
+import nimonscooked.enums.ChefStatus;
 import javax.swing.Timer;
 
-
-// berfungsi untuk memotong ingredient yang dapat dipotong
-// hanya akan bergerak apabila chefPlayer berada di sebelah cutting station
 public class CuttingStation extends Station {
-    private final int cuttingDuration = 15000; //15 detik
-    private final int interval = 1000; //buat UI nya nanti
+    // Sesuai Spec: 3 Detik
+    private final int cuttingDuration = 3000;
     private Timer cuttingTimer;
-    private int cuttingStartTime = 0;
-    private int savedTime = 0;
+    private Chef processingChef; // Chef yang sedang memotong
 
     public CuttingStation(String id, float x, float y) {
         super(id, "Cutting Station", x, y);
     }
 
     @Override
-    public void interact(ChefPlayer player) {
-        // cek apakah ada item di cutting station
-        if(this.containedItem == null){
-            if(player.getHeldItem() != null){ //menunggu update dari chefPlayer, ini berfungsi untuk ngecek apakah player pegang item atau nggak
-                super.placeItem(player.takeItem()); //item ditaro di cutting station
-                this.savedTime = 0;
+    public void interact(Chef chef) {
+        // A. Jika Station Kosong & Chef bawa item -> Taruh item
+        if (this.containedItem == null && chef.getHeldItem() != null) {
+            this.placeItem(chef.takeHeldItem());
+            return;
+        }
+
+        // B. Jika Station Ada Item & Chef tangan kosong -> Ambil item (hanya jika tidak
+        // sedang diproses)
+        if (this.containedItem != null && chef.getHeldItem() == null && cuttingTimer == null) {
+            chef.setHeldItem(this.takeItem());
+            return;
+        }
+
+        // C. Aksi Memotong (Interact)
+        if (this.containedItem != null && this.containedItem instanceof Preparable) {
+            Preparable item = (Preparable) this.containedItem;
+
+            // Validasi: Harus RAW agar bisa dicut (sesuai method canBeChopped di
+            // Ingredient)
+            if (item.canBeChopped()) {
+                startCuttingProcess(chef, item);
             }
         }
-
-        // lanjut apabila ada item di cutting station
-        // cek apakah item bisa dipotong
-        if(!(containedItem instanceof Preparable)){
-            System.out.println("Item tidak bisa dipotong");
-            return;
-        }
-
-        Preparable preparableItem = (Preparable) containedItem;
-        if(!preparableItem.canBeChopped()){
-            System.out.println("Item tidak bisa dipotong");
-            return;
-        }
-        // potong item
-        preparableItem.chop();
-        startCuttingTimer(preparableItem);
-        System.out.println("Item berhasil dipotong");
-        return;
     }
 
-    // implementasi pemotongan dengan timer
-    private void startCuttingTimer(Preparable item) {
-        stopCuttingTimer();
+    private void startCuttingProcess(Chef chef, Preparable item) {
+        // Set Chef jadi BUSY
+        chef.setStatus(ChefStatus.BUSY);
+        this.processingChef = chef;
 
+        System.out.println("Mulai memotong " + item.getName());
+
+        // Timer 3 Detik
         cuttingTimer = new Timer(cuttingDuration, e -> {
-            item.chop();
-            cuttingTimer.stop();
+            item.chop(); // Ubah state jadi CHOPPED
+            System.out.println("Selesai memotong! Jadi: " + item.getName() + " (" + item.getState() + ")");
+
+            // Lepaskan Chef dari status BUSY
+            if (processingChef != null) {
+                processingChef.setStatus(ChefStatus.IDLE);
+                processingChef = null;
+            }
+
+            // Matikan timer
+            ((Timer) e.getSource()).stop();
+            cuttingTimer = null;
         });
 
         cuttingTimer.setRepeats(false);
         cuttingTimer.start();
     }
 
-    private void stopCuttingTimer() {
+    // Method untuk cancel progress jika perlu (opsional, tapi disarankan)
+    public void cancelProcess() {
         if (cuttingTimer != null && cuttingTimer.isRunning()) {
             cuttingTimer.stop();
+            cuttingTimer = null;
+            if (processingChef != null) {
+                processingChef.setStatus(ChefStatus.IDLE);
+                processingChef = null;
+            }
         }
-    }
-
-    private void finishCutting(Preparable item) {
-        item.chop();
-        // harusnya nanti UI diupdate disini
     }
 }

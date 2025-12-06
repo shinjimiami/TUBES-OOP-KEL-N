@@ -103,7 +103,7 @@ public class OrderManager {
                 for (int i = 0; i < reqs.size(); i++) {
                     Recipe.Requirement r = reqs.get(i);
                     // Cek Nama (Case Insensitive) & State
-                    if (ing.getName().equalsIgnoreCase(r.name) && ing.getCurrentState() == r.state) {
+                    if (ing.getName().equalsIgnoreCase(r.name) && ing.getState() == r.state) {
                         reqs.remove(i); // Tandai requirement ini sudah terpenuhi
                         found = true;
                         break;

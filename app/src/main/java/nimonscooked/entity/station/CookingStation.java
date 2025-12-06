@@ -1,78 +1,98 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.Station;
+import nimonscooked.entity.Chef;
+import nimonscooked.entity.item.kitchenutensil.FryingPan;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.enums.IngredientState;
-import nimonscooked.entity.item.kitchenutensil.FryingPan;
-import nimonscooked.entity.station.ChefPlayer;
 import javax.swing.Timer;
 import java.util.List;
 
-// berfungsi untuk memasak ingredient yang dapat dimasak
-// hanya bisa mulai apabila sudah ada fryingpan di cooking station
 public class CookingStation extends Station {
-    private final int cookingDuration = 15000;
-    private final int burntDuration = 25000;
-    private final int interval = 1000; //buat UI nya nanti
-    
+    // Sesuai Spec: 12 Detik Matang, 24 Detik Gosong
+    private final int COOK_TIME = 12000;
+    private final int BURN_TIME = 24000; // Total waktu dari awal
+
     private Timer cookingTimer;
-    private int cookingStartTime = 0;
-    private Preparable currentItem;
+    private int elapsedTime = 0; // dalam ms
 
     public CookingStation(String id, float x, float y) {
         super(id, "Cooking Station", x, y);
     }
 
     @Override
-    public void interact(ChefPlayer chefPlayer) {
-        if(this.containedItem == null && chefPlayer.getHeldItem() != null){
-            super.placeItem(chefPlayer.takeItem());
-            startCookingTimer();
-        } else if(chefPlayer.getHeldItem() == null && this.containedItem != null){
-            stopCookingTimer();
-            chefPlayer.placeItem(this.takeItem());
+    public void interact(Chef chef) {
+        // Logic ambil/taruh Frying Pan
+        if (this.containedItem == null && chef.getHeldItem() instanceof FryingPan) {
+            this.placeItem(chef.takeHeldItem());
+            checkAndStartCooking();
+        } else if (this.containedItem != null && chef.getHeldItem() == null) {
+            // Ambil pan -> Stop masak (logic masak di pause atau reset tergantung spec,
+            // disini kita pause/stop)
+            stopCooking();
+            chef.setHeldItem(this.takeItem());
+        }
+        // Logic menaruh bahan ke dalam Pan yang sedang di kompor
+        else if (this.containedItem instanceof FryingPan && chef.getHeldItem() instanceof Preparable) {
+            FryingPan pan = (FryingPan) this.containedItem;
+            Preparable ingredient = (Preparable) chef.getHeldItem();
+
+            if (pan.canAccept(ingredient)) {
+                pan.addIngredient((Preparable) chef.takeHeldItem());
+                checkAndStartCooking();
+            }
         }
     }
 
-    private void startCookingTimer() {
-        stopCookingTimer();
-
-        if(!(this.containedItem instanceof FryingPan)){
+    private void checkAndStartCooking() {
+        if (!(this.containedItem instanceof FryingPan))
             return;
-        }
 
-        FryingPan fryingPan = (FryingPan) this.containedItem;
-        List<Preparable> contents = fryingPan.getContents();
-        if(contents.isEmpty()){
+        FryingPan pan = (FryingPan) this.containedItem;
+        List<Preparable> contents = pan.getContents();
+
+        if (contents.isEmpty())
             return;
-        }
-        Preparable itemToCook = contents.get(0);
 
-        if(itemToCook == null || !itemToCook.canBeCooked()){
+        // Asumsi 1 pan 1 bahan (sesuai FryingPan.java capacity=1)
+        Preparable item = contents.get(0);
+
+        if (item.canBeCooked()) {
+            startCookingTimer(item);
+        }
+    }
+
+    private void startCookingTimer(Preparable item) {
+        if (cookingTimer != null && cookingTimer.isRunning())
             return;
-        }
 
-        this.currentItem = itemToCook;
+        System.out.println("Mulai memasak " + item.getName());
 
-        cookingTimer = new Timer(interval, e -> {
-            cookingStartTime += interval;
+        // Update tiap 1 detik untuk cek status
+        cookingTimer = new Timer(1000, e -> {
+            elapsedTime += 1000;
 
-            if(cookingStartTime >= burntDuration){
-                currentItem.cook(); 
-                stopCookingTimer();
-            } else if(cookingStartTime >= cookingDuration){
-                currentItem.cook();
+            // Cek Matang
+            if (elapsedTime == COOK_TIME) {
+                item.cook(); // Ubah ke COOKED
+                System.out.println("Makanan Matang!");
+            }
+
+            // Cek Gosong
+            if (elapsedTime >= BURN_TIME) {
+                item.cook(); // Ubah ke BURNED (logic cook() handle state change)
+                System.out.println("Makanan Gosong!");
+                stopCooking(); // Stop timer kalau sudah gosong
             }
         });
 
         cookingTimer.start();
     }
 
-    private void stopCookingTimer() {
-        if (cookingTimer != null && cookingTimer.isRunning()) {
+    private void stopCooking() {
+        if (cookingTimer != null) {
             cookingTimer.stop();
-            cookingStartTime = 0;
+            cookingTimer = null;
         }
+        elapsedTime = 0;
     }
-    
 }

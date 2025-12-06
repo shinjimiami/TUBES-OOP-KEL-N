@@ -2,7 +2,7 @@
 package nimonscooked.entity.station;
 
 import nimonscooked.entity.item.Item;
-import nimonscooked.entity.station.ChefPlayer;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.Entity;
 
 public abstract class Station extends Entity {
@@ -15,17 +15,17 @@ public abstract class Station extends Entity {
         this.containedItem = null;
     }
 
-    abstract void interact(ChefPlayer player);
+    public abstract void interact(Chef chef);
 
-    public Item takeItem(){
+    public Item takeItem() {
         Item item = this.containedItem;
         this.containedItem = null;
         this.isOccupied = false;
         return item;
     }
 
-    public boolean placeItem(Item item){
-        if(this.isOccupied){
+    public boolean placeItem(Item item) {
+        if (this.isOccupied) {
             return false;
         }
         this.containedItem = item;
@@ -41,11 +41,11 @@ public abstract class Station extends Entity {
         return containedItem;
     }
 
-    public Item peekItem(){
+    public Item peekItem() {
         return this.containedItem;
     }
 
     public void setContainedItem(Item containedItem) {
         this.containedItem = containedItem;
-    }  
+    }
 }

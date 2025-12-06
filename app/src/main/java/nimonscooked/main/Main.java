@@ -13,6 +13,7 @@ public class Main {
 
         GamePanel gamePanel = new GamePanel();
         // gamePanel.setTime(time);
+
         // gamePanel.setWeather(weather);
         // gamePanel.setGameClock(gameClock);
 

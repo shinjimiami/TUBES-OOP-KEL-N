@@ -1,6 +1,8 @@
 package nimonscooked.entity;
 
-public abstract class Entity{
+import java.awt.image.BufferedImage;
+
+public abstract class Entity {
     protected String id;
     protected String name;
     protected int x;
@@ -8,7 +10,7 @@ public abstract class Entity{
 
     public BufferedImage image;
     public boolean collision = false;
-    
+
     public Entity(String id, String name, int x, int y) {
         this.id = id;
         this.name = name;
@@ -16,7 +18,11 @@ public abstract class Entity{
         this.y = y;
     }
 
-    public void moveTo(float X, float Y) {
+    public Entity(String id, String name, float x, float y) {
+        this(id, name, Math.round(x), Math.round(y));
+    }
+
+    public void moveTo(int X, int Y) {
         this.x += X;
         this.y += Y;
     }
@@ -37,19 +43,19 @@ public abstract class Entity{
         this.name = name;
     }
 
-    public float getX() {
+    public int getX() {
         return x;
     }
 
-    public void setX(float x) {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public float getY() {
+    public int getY() {
         return y;
     }
 
-    public void setY(float y) {
+    public void setY(int y) {
         this.y = y;
     }
 

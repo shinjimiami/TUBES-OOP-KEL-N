@@ -1,4 +1,4 @@
-package nimonscooked.entity.item.kitchenutensil;
+package nimonscooked.interfaces;
 
 import nimonscooked.interfaces.Preparable;
 

@@ -1,4 +1,4 @@
-package nimonscooked.action;
+package nimonscooked.entity.action;
 import nimonscooked.entity.Chef;
 
 public interface Command {

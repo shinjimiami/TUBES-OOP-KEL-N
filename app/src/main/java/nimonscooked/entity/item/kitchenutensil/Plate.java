@@ -19,7 +19,6 @@ public class Plate extends KitchenUtensils {
         return contents;
     }
 
-    @Override
     public void removeContents() {
         contents.clear();
         dish.clearDish();
