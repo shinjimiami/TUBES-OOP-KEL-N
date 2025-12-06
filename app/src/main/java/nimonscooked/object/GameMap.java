@@ -1,4 +1,4 @@
-package nimonscooked.object;
+package nimonscooked.object; // <--- Sesuai folder di screenshot
 
 public class GameMap {
     private char[][] grid;
@@ -6,7 +6,7 @@ public class GameMap {
     private final int cols = 14;
 
     public GameMap() {
-        
+        // Layout Map Type C: Burger Map
         grid = new char[][]{
             {'X', 'X', 'X', 'X', 'X', 'A', 'A', 'I', 'A', 'A', 'X', 'X', 'X', 'X'},
             {'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A'},
@@ -22,17 +22,12 @@ public class GameMap {
     }
 
     public boolean isWalkable(int x, int y) {
-        if (x < 0 || x >= cols || y < 0 || y >= rows) {
-            return false;
-        }
+        if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
         char tile = grid[y][x];
         return tile == '.' || tile == 'V';
     }
 
-    public char[][] getGrid() {
-        return grid;
-    }
-    
+    public char[][] getGrid() { return grid; }
     public int getRows() { return rows; }
     public int getCols() { return cols; }
 }
