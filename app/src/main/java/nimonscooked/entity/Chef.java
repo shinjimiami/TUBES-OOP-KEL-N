@@ -3,15 +3,15 @@ package nimonscooked.entity;
 import nimonscooked.enums.Direction;
 import nimonscooked.enums.ChefStatus;
 import nimonscooked.object.Position;
-import nimonscooked.object.Item;
+import nimonscooked.entity.item.Item;
 
 public class Chef {
     private String id;
     private String name;
-    
+
     private Position position;
     public int screenX, screenY;
-    
+
     private Direction direction;
     private Item inventory;
     private ChefStatus currentAction;
@@ -67,12 +67,13 @@ public class Chef {
     }
 
     public void attemptMove(Direction dir, int deltaX, int deltaY) {
-        if (isMoving || currentAction == ChefStatus.BUSY) return;
+        if (isMoving || currentAction == ChefStatus.BUSY)
+            return;
 
         this.direction = dir;
         this.position.setX(this.position.getX() + deltaX);
         this.position.setY(this.position.getY() + deltaY);
-        
+
         stepState = !stepState;
         if (!stepState) {
             spriteNum = 1;
@@ -88,25 +89,58 @@ public class Chef {
         if (idleCounter > 20) {
             if (idleGoingUp) {
                 idleYOffset--;
-                if (idleYOffset < -2) idleGoingUp = false;
+                if (idleYOffset < -2)
+                    idleGoingUp = false;
             } else {
                 idleYOffset++;
-                if (idleYOffset > 2) idleGoingUp = true;
+                if (idleYOffset > 2)
+                    idleGoingUp = true;
             }
             idleCounter = 0;
         }
     }
 
-    public int getVisualY() { return screenY + idleYOffset; }
-    public int getVisualX() { return screenX; }
-    
-    public void setDirection(Direction d) { this.direction = d; }
-    public Direction getDirection() { return direction; }
-    public void setInventory(Item i) { this.inventory = i; }
-    public Item getInventory() { return inventory; }
-    public void setCurrentAction(ChefStatus s) { this.currentAction = s; }
-    public ChefStatus getCurrentAction() { return currentAction; }
-    public Position getPosition() { return position; }
-    public String getName() { return name; }
-    public boolean isMoving() { return isMoving; }
+    public int getVisualY() {
+        return screenY + idleYOffset;
+    }
+
+    public int getVisualX() {
+        return screenX;
+    }
+
+    public void setDirection(Direction d) {
+        this.direction = d;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setInventory(Item i) {
+        this.inventory = i;
+    }
+
+    public Item getInventory() {
+        return inventory;
+    }
+
+    public void setCurrentAction(ChefStatus s) {
+        this.currentAction = s;
+    }
+
+    public ChefStatus getCurrentAction() {
+        return currentAction;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
 }

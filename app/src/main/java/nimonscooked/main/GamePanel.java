@@ -1,6 +1,5 @@
 package nimonscooked.main;
 
-<<<<<<< HEAD
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -10,7 +9,6 @@ import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.InputStream;
-=======
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -117,11 +115,11 @@ import nimonscooked.enums.Direction;
 
 public class GamePanel extends JPanel implements Runnable, KeyListener {
     final int tileSize = 48;
-    
+
     GameMap gameMap = new GameMap();
     final int screenWidth = tileSize * gameMap.getCols();
     final int screenHeight = tileSize * gameMap.getRows();
-    
+
     Thread gameThread;
     InputHandler inputHandler;
     List<Chef> chefs = new ArrayList<>();
@@ -133,9 +131,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     // Warna Pastel Lantai
     Color pastelOrange = new Color(255, 223, 186);
     Color pastelYellow = new Color(255, 253, 208);
-    
+
     // Warna Shiny Yellow (Emas)
-    Color shinyGold = new Color(255, 215, 0); 
+    Color shinyGold = new Color(255, 215, 0);
     Color shinyGoldGlow = new Color(255, 223, 0, 120); // Transparan
 
     public GamePanel() {
@@ -147,7 +145,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         chefs.add(new Chef("C1", "Kirby", 6, 2));
         chefs.add(new Chef("C2", "Waddle Dee", 8, 5));
-        
+
         inputHandler = new InputHandler(gameMap, this, chefs);
 
         try {
@@ -175,16 +173,21 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             e.printStackTrace();
         }
     }
-    
+
     private BufferedImage load(String path) {
         try {
             InputStream is = getClass().getResourceAsStream(path);
-            if (is == null) return null;
+            if (is == null)
+                return null;
             return ImageIO.read(is);
-        } catch (Exception e) { return null; }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
-    public Chef getActiveChef() { return chefs.get(activeChefIndex); }
+    public Chef getActiveChef() {
+        return chefs.get(activeChefIndex);
+    }
 
     public void switchChef() {
         activeChefIndex = (activeChefIndex + 1) % chefs.size();
@@ -197,15 +200,19 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     @Override
     public void run() {
-        while(gameThread != null) {
+        while (gameThread != null) {
             update();
             repaint();
-            try { Thread.sleep(1000/60); } catch (Exception e) {}
+            try {
+                Thread.sleep(1000 / 60);
+            } catch (Exception e) {
+            }
         }
     }
 
     public void update() {
-        for (Chef c : chefs) c.update();
+        for (Chef c : chefs)
+            c.update();
     }
 
     @Override
@@ -220,21 +227,21 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 int x = col * tileSize;
                 int y = row * tileSize;
                 char tile = grid[row][col];
-                
+
                 if (tile == 'X') {
                     g2.setColor(Color.DARK_GRAY);
                     g2.fillRect(x, y, tileSize, tileSize);
-                } 
-                else if (tile == '.' || tile == 'V') {
-                    if ((row + col) % 2 == 0) g2.setColor(pastelOrange);
-                    else g2.setColor(pastelYellow);
+                } else if (tile == '.' || tile == 'V') {
+                    if ((row + col) % 2 == 0)
+                        g2.setColor(pastelOrange);
+                    else
+                        g2.setColor(pastelYellow);
                     g2.fillRect(x, y, tileSize, tileSize);
-                } 
-                else {
+                } else {
                     g2.setColor(new Color(100, 150, 255));
                     g2.fillRect(x, y, tileSize, tileSize);
                 }
-                
+
                 if (tile != 'X' && tile != '.' && tile != 'V') {
                     g2.setColor(Color.BLACK);
                     g2.drawRect(x, y, tileSize, tileSize);
@@ -251,7 +258,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             BufferedImage[] sprites = (i == 0) ? chef1Sprites : chef2Sprites;
             BufferedImage imageToDraw = null;
-            
+
             int baseIndex = 0;
             switch (c.getDirection()) {
                 case UP -> baseIndex = 0;
@@ -260,15 +267,17 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 case RIGHT -> baseIndex = 6;
             }
 
-            if (c.spriteNum == 1) imageToDraw = sprites[baseIndex];
-            else imageToDraw = sprites[baseIndex + 1];
+            if (c.spriteNum == 1)
+                imageToDraw = sprites[baseIndex];
+            else
+                imageToDraw = sprites[baseIndex + 1];
 
             if (imageToDraw != null) {
-                g2.setColor(new Color(0,0,0, 70));
+                g2.setColor(new Color(0, 0, 0, 70));
                 g2.fillOval(px + 8, py + 40, 32, 10);
-                
+
                 g2.drawImage(imageToDraw, px, py, tileSize, tileSize, null);
-                
+
                 // --- INDIKATOR AKTIF (SHINY YELLOW) ---
                 // Hanya muncul jika:
                 // 1. Chef ini adalah chef aktif (i == activeChefIndex)
@@ -278,7 +287,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     g2.setColor(shinyGoldGlow);
                     g2.setStroke(new BasicStroke(5));
                     g2.drawRect(px - 2, py - 2, tileSize + 4, tileSize + 4);
-                    
+
                     // Border Dalam (Solid)
                     g2.setColor(shinyGold);
                     g2.setStroke(new BasicStroke(2));
@@ -297,6 +306,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         inputHandler.handleInput(e.getKeyCode(), getActiveChef());
     }
-    @Override public void keyTyped(KeyEvent e) {}
-    @Override public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
 }
