@@ -163,7 +163,11 @@ public class Chef {
     }
 
     public void setStatus(ChefStatus busy) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setStatus'");
+        this.currentAction = busy;
+        if (busy == ChefStatus.BUSY) {
+            // Pastikan animasi pergerakan berhenti saat sedang sibuk
+            this.isMoving = false;
+            this.pixelCounter = 0;
+        }
     }
 }

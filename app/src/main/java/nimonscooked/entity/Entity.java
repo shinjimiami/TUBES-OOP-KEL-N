@@ -17,4 +17,12 @@ public class Entity {
         this.x = x; 
         this.y = y;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

@@ -2,6 +2,8 @@ package nimonscooked.action;
 
 import nimonscooked.entity.Chef;
 import nimonscooked.enums.ChefStatus;
+import nimonscooked.entity.station.Station;
+import nimonscooked.enums.Direction;
 import nimonscooked.object.GameMap;
 
 public class InteractCommand implements Command {
@@ -17,21 +19,26 @@ public class InteractCommand implements Command {
             System.out.println(chef.getName() + " is busy!");
             return;
         }
-        startAsyncAction(chef, "Interacting", 3000);
+        Station targetStation = getTargetStation(chef);
+        if (targetStation == null) {
+            System.out.println("Tidak ada station di depan.");
+            return;
+        }
+        targetStation.interact(chef);
     }
 
-    private void startAsyncAction(Chef chef, String actionName, int durationMs) {
-        new Thread(() -> {
-            try {
-                System.out.println(chef.getName() + " " + actionName + "...");
-                chef.setCurrentAction(ChefStatus.BUSY);
-                Thread.sleep(durationMs);
-                System.out.println("Done " + actionName);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                chef.setCurrentAction(ChefStatus.IDLE);
-            }
-        }).start();
+    private Station getTargetStation(Chef chef) {
+        Direction dir = chef.getDirection();
+        int x = chef.getPosition().getX();
+        int y = chef.getPosition().getY();
+
+        switch (dir) {
+            case UP -> y -= 1;
+            case DOWN -> y += 1;
+            case LEFT -> x -= 1;
+            case RIGHT -> x += 1;
+        }
+
+        return map.getStationAt(x, y);
     }
 }

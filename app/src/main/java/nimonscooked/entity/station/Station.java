@@ -15,7 +15,7 @@ public abstract class Station extends Entity {
         this.containedItem = null;
     }
 
-    abstract void interact(Chef player);
+    public abstract void interact(Chef player);
 
     public Item takeItem() {
         Item item = this.containedItem;

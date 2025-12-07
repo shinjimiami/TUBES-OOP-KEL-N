@@ -1,6 +1,4 @@
-package nimonscooked.entity.item.kitchenutensil;
-
-import nimonscooked.interfaces.Preparable;
+package nimonscooked.interfaces;
 
 public interface CookingDevice {
     boolean isPortable();
