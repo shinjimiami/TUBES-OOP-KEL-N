@@ -12,7 +12,13 @@ public abstract class KitchenUtensils extends Item {
         this.contents = contents;
     }
 
-    public abstract List<Preparable> getContents();
+    public java.util.List<nimonscooked.interfaces.Preparable> getContents() {
+        return contents;
+    }
 
-    public abstract void removeContents();
+    public void clearContents() {
+        if (contents != null) {
+            contents.clear();
+        }
+    }
 }
