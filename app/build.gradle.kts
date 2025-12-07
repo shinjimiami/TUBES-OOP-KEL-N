@@ -37,6 +37,15 @@ application {
     mainClass = "nimonscooked.main.Main"
 }
 
+sourceSets {
+    main {
+        resources {
+            // Include sprite PNG assets that currently live under src/main/java
+            srcDir("src/main/java/nimonscooked/resources")
+        }
+    }
+}
+
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
