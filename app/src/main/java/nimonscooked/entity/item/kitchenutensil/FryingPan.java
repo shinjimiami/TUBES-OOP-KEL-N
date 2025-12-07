@@ -1,69 +1,34 @@
-package nimonscooked.entity.item.kitchenutensil;
+package nimonscooked.entity.station;
 
-import nimonscooked.entity.item.kitchenutensil.CookingDevice;
-import nimonscooked.interfaces.Preparable;
-import nimonscooked.entity.item.kitchenutensil.KitchenUtensils;
-import java.util.ArrayList;
-import java.util.List;
+import nimonscooked.entity.ChefPlayer;
+import nimonscooked.entity.item.ingredient.Ingredient;
+import nimonscooked.enums.IngredientType;
+import nimonscooked.factory.IngredientFactory;
 
-public class FryingPan extends KitchenUtensils implements CookingDevice{
-    private final int MAX_CAPACITY = 1;
-    private boolean isCooking = false;
+public class IngredientStorage extends Station {
 
-    public FryingPan(String id, float x, float y) {
-        super(id, "FryingPan", x, y, new ArrayList<Preparable>());
+    private IngredientType type; // Jenis bahan yang disimpan storage ini
+
+    public IngredientStorage(String id, float x, float y, IngredientType type) {
+        super(id, "Crate: " + type.name(), x, y);
+        this.type = type;
     }
 
     @Override
-    public boolean isPortable(){
-        return true;
-    }
+    public void interact(ChefPlayer player) {
+        // Storage ini infinite source, jadi selalu bisa ambil
+        // Syarat: Tangan pemain harus kosong
+        if (player.getHeldItem() == null) {
+            // Minta Factory buatkan bahan baru
+            Ingredient newIngredient = IngredientFactory.createIngredient(this.type);
 
-    @Override
-    public int capacity(){
-        return MAX_CAPACITY;
-    }
-
-    @Override
-    public boolean canAccept(Preparable ingredient){
-        return contents.size() < MAX_CAPACITY && !isCooking;
-    }
-
-    @Override
-    public void addIngredient(Preparable ingredient){
-        if(canAccept(ingredient)){
-            contents.add(ingredient);
+            // Berikan ke pemain
+            player.placeItem(newIngredient);
+            System.out.println("Mengambil " + newIngredient.getName() + " dari Storage.");
         }
     }
 
-    @Override
-    public List<Preparable> getContents(){
-        return contents;
-    }
-
-
-    @Override
-    public void removeContents(){
-        if(isCooking){
-            this.isCooking = false;
-        }
-        contents.clear();
-    }
-
-    @Override
-    public void startCooking(){
-        if(isEmpty() || isCooking){
-            return;
-        }
-        this.isCooking = true;
-    }
-
-    @Override
-    public void stopCooking(){
-        this.isCooking = false;
-    }
-
-    public boolean isEmpty(){
-        return contents.size() == 0;
+    public IngredientType getType() {
+        return type;
     }
 }

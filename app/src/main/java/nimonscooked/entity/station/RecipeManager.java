@@ -1,4 +1,4 @@
-package nimonscooked.object;
+package nimonscooked.entity.station;
 
 import nimonscooked.entity.item.dish.Dish;
 import nimonscooked.interfaces.Preparable;
@@ -9,18 +9,11 @@ import java.util.stream.Collectors;
 
 public class RecipeManager {
 
-    /**
-     * Mengecek apakah Dish sesuai dengan salah satu resep Burger Map.
-     * 
-     * @return Nama resep jika valid, atau null jika tidak valid.
-     */
     public static String getRecipeName(Dish dish) {
         if (dish == null || dish.getComponents().isEmpty())
             return null;
 
         List<Preparable> components = dish.getComponents();
-
-        // Ambil set nama bahan untuk pengecekan cepat
         Set<String> compNames = components.stream()
                 .map(Preparable::getName)
                 .collect(Collectors.toSet());
@@ -33,33 +26,25 @@ public class RecipeManager {
 
         int size = components.size();
 
-        // 1. Classic Burger: Roti + Daging (Cooked)
-        if (size == 2 && hasBun && hasCookedMeat) {
+        // 1. Classic Burger: Roti + Daging Matang
+        if (size == 2 && hasBun && hasCookedMeat)
             return "Classic Burger";
-        }
 
-        // 2. Cheeseburger: Roti + Daging (Cooked) + Keju (Chopped)
-        if (size == 3 && hasBun && hasCookedMeat && hasChoppedCheese) {
+        // 2. Cheeseburger: Roti + Daging Matang + Keju Potong
+        if (size == 3 && hasBun && hasCookedMeat && hasChoppedCheese)
             return "Cheeseburger";
-        }
 
-        // 3. BLT Burger: Roti + Lettuce (Chopped) + Tomat (Chopped) + Daging (Cooked)
-        // Note: Spec bilang BLT, tapi biasanya Bacon Lettuce Tomato. Di sini Daging
-        // ganti Bacon?
-        // Sesuai spec baris 482: "BLT Burger: Roti + Lettuce + Tomat + Daging"
-        if (size == 4 && hasBun && hasCookedMeat && hasChoppedLettuce && hasChoppedTomato) {
+        // 3. BLT Burger: Roti + Daging Matang + Lettuce Potong + Tomat Potong
+        if (size == 4 && hasBun && hasCookedMeat && hasChoppedLettuce && hasChoppedTomato)
             return "BLT Burger";
-        }
 
-        // 4. Deluxe Burger: Roti + Lettuce (Chopped) + Daging (Cooked) + Keju (Chopped)
-        if (size == 4 && hasBun && hasCookedMeat && hasChoppedLettuce && hasChoppedCheese) {
+        // 4. Deluxe Burger: Roti + Daging Matang + Lettuce Potong + Keju Potong
+        if (size == 4 && hasBun && hasCookedMeat && hasChoppedLettuce && hasChoppedCheese)
             return "Deluxe Burger";
-        }
 
-        return null; // Bukan resep yang valid
+        return null;
     }
 
-    // Helper untuk cek nama bahan DAN statusnya (misal: Meat harus COOKED)
     private static boolean hasIngredientState(List<Preparable> list, String name, IngredientState state) {
         return list.stream().anyMatch(p -> p.getName().equalsIgnoreCase(name) && p.getState() == state);
     }

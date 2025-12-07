@@ -1,78 +1,77 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.Station;
-import nimonscooked.interfaces.Preparable;
-import nimonscooked.enums.IngredientState;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.kitchenutensil.FryingPan;
-import nimonscooked.entity.station.ChefPlayer;
-import javax.swing.Timer;
-import java.util.List;
+import nimonscooked.interfaces.Preparable;
 
-// berfungsi untuk memasak ingredient yang dapat dimasak
-// hanya bisa mulai apabila sudah ada fryingpan di cooking station
 public class CookingStation extends Station {
-    private final int cookingDuration = 15000;
-    private final int burntDuration = 25000;
-    private final int interval = 1000; //buat UI nya nanti
-    
-    private Timer cookingTimer;
-    private int cookingStartTime = 0;
-    private Preparable currentItem;
 
     public CookingStation(String id, float x, float y) {
-        super(id, "Cooking Station", x, y);
+        super(id, "Stove", (int) x, (int) y);
     }
 
     @Override
-    public void interact(ChefPlayer chefPlayer) {
-        if(this.containedItem == null && chefPlayer.getHeldItem() != null){
-            super.placeItem(chefPlayer.takeItem());
-            startCookingTimer();
-        } else if(chefPlayer.getHeldItem() == null && this.containedItem != null){
-            stopCookingTimer();
-            chefPlayer.placeItem(this.takeItem());
-        }
-    }
+    public void interact(Chef player) {
+        // Logika 1: Menaruh Pan ke Kompor
+        if (this.containedItem == null && player.getHeldItem() instanceof FryingPan) {
+            FryingPan pan = (FryingPan) player.takeItem();
+            placeItem(pan);
 
-    private void startCookingTimer() {
-        stopCookingTimer();
-
-        if(!(this.containedItem instanceof FryingPan)){
-            return;
-        }
-
-        FryingPan fryingPan = (FryingPan) this.containedItem;
-        List<Preparable> contents = fryingPan.getContents();
-        if(contents.isEmpty()){
-            return;
-        }
-        Preparable itemToCook = contents.get(0);
-
-        if(itemToCook == null || !itemToCook.canBeCooked()){
-            return;
-        }
-
-        this.currentItem = itemToCook;
-
-        cookingTimer = new Timer(interval, e -> {
-            cookingStartTime += interval;
-
-            if(cookingStartTime >= burntDuration){
-                currentItem.cook(); 
-                stopCookingTimer();
-            } else if(cookingStartTime >= cookingDuration){
-                currentItem.cook();
+            // Cek isi pan, kalau ada bahan mentah -> Nyalakan api
+            if (!pan.isEmpty()) {
+                startCookingProcess(pan);
             }
-        });
-
-        cookingTimer.start();
-    }
-
-    private void stopCookingTimer() {
-        if (cookingTimer != null && cookingTimer.isRunning()) {
-            cookingTimer.stop();
-            cookingStartTime = 0;
+        }
+        // Logika 2: Mengambil Pan dari Kompor
+        else if (this.containedItem != null && player.getHeldItem() == null) {
+            // Matikan kompor kalau diangkat
+            if (this.containedItem instanceof FryingPan) {
+                ((FryingPan) this.containedItem).stopCooking();
+            }
+            player.placeItem(takeItem());
         }
     }
-    
+
+    private void startCookingProcess(FryingPan pan) {
+        // Thread Memasak (Non-blocking)
+        new Thread(() -> {
+            try {
+                System.out.println("[Kompor] Mulai memasak...");
+                pan.startCooking();
+
+                // Fase 1: Tunggu Matang (12 detik)
+                for (int i = 0; i < 12; i++) {
+                    if (!pan.isCooking())
+                        return; // Panci diangkat, stop thread
+                    Thread.sleep(1000);
+                }
+
+                // Ubah jadi COOKED
+                for (Preparable p : pan.getContents()) {
+                    p.cook();
+                }
+                System.out.println("[Kompor] Makanan MATANG (Cooked)!");
+
+                // Fase 2: Tunggu Gosong (12 detik lagi)
+                for (int i = 0; i < 12; i++) {
+                    if (!pan.isCooking())
+                        return;
+                    Thread.sleep(1000);
+                }
+
+                // Cek apakah panci masih di sini sebelum gosong
+                if (this.containedItem == pan) {
+                    for (Preparable p : pan.getContents()) {
+                        p.cook(); // Cooked -> Burned
+                    }
+                    System.out.println("[Kompor] Makanan GOSONG (Burned)!");
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                pan.stopCooking();
+            }
+        }).start();
+    }
 }

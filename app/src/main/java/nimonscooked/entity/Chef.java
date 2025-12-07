@@ -3,32 +3,37 @@ package nimonscooked.entity;
 import nimonscooked.enums.Direction;
 import nimonscooked.enums.ChefStatus;
 import nimonscooked.object.Position;
-import nimonscooked.object.Item;
+import nimonscooked.entity.item.Item;
 
 public class Chef {
+    // --- Identitas ---
     private String id;
     private String name;
-    
-    private Position position;
-    public int screenX, screenY;
-    
-    private Direction direction;
-    private Item inventory;
-    private ChefStatus currentAction;
 
+    // --- Posisi & Visual ---
+    private Position position;
+    public int screenX, screenY; // Koordinat visual untuk rendering
+    private Direction direction;
+
+    // --- State & Animasi ---
+    private ChefStatus currentAction;
     private boolean isMoving = false;
     private int pixelCounter = 0;
     private final int speed = 4;
-    private final int tileSize = 48;
+    public final int tileSize = 48; // Pastikan public agar bisa diakses jika perlu
 
+    // Variabel Animasi Sprite
     public int spriteCounter = 0;
     public int spriteNum = 1;
     private boolean stepState = false;
-
     private int idleCounter = 0;
     private int idleYOffset = 0;
     private boolean idleGoingUp = true;
 
+    // --- INVENTORY (Pindahan dari ChefPlayer) ---
+    private Item heldItem;
+
+    // --- Constructor ---
     public Chef(String id, String name, int startX, int startY) {
         this.id = id;
         this.name = name;
@@ -36,10 +41,11 @@ public class Chef {
         this.screenX = startX * tileSize;
         this.screenY = startY * tileSize;
         this.direction = Direction.DOWN;
-        this.inventory = null;
+        this.heldItem = null;
         this.currentAction = ChefStatus.IDLE;
     }
 
+    // --- Game Loop Update ---
     public void update() {
         if (isMoving) {
             moveSmoothly();
@@ -59,6 +65,7 @@ public class Chef {
         pixelCounter += speed;
 
         if (pixelCounter >= tileSize) {
+            // Snap to grid
             screenX = position.getX() * tileSize;
             screenY = position.getY() * tileSize;
             pixelCounter = 0;
@@ -67,18 +74,19 @@ public class Chef {
     }
 
     public void attemptMove(Direction dir, int deltaX, int deltaY) {
-        if (isMoving || currentAction == ChefStatus.BUSY) return;
+        // Cek status BUSY (sedang memotong/mencuci) atau sedang bergerak
+        if (isMoving || currentAction == ChefStatus.BUSY)
+            return;
 
         this.direction = dir;
+
+        // Update posisi grid logika
         this.position.setX(this.position.getX() + deltaX);
         this.position.setY(this.position.getY() + deltaY);
-        
+
+        // Update animasi langkah
         stepState = !stepState;
-        if (!stepState) {
-            spriteNum = 1;
-        } else {
-            spriteNum = 2;
-        }
+        spriteNum = stepState ? 2 : 1;
 
         isMoving = true;
     }
@@ -88,25 +96,74 @@ public class Chef {
         if (idleCounter > 20) {
             if (idleGoingUp) {
                 idleYOffset--;
-                if (idleYOffset < -2) idleGoingUp = false;
+                if (idleYOffset < -2)
+                    idleGoingUp = false;
             } else {
                 idleYOffset++;
-                if (idleYOffset > 2) idleGoingUp = true;
+                if (idleYOffset > 2)
+                    idleGoingUp = true;
             }
             idleCounter = 0;
         }
     }
 
-    public int getVisualY() { return screenY + idleYOffset; }
-    public int getVisualX() { return screenX; }
-    
-    public void setDirection(Direction d) { this.direction = d; }
-    public Direction getDirection() { return direction; }
-    public void setInventory(Item i) { this.inventory = i; }
-    public Item getInventory() { return inventory; }
-    public void setCurrentAction(ChefStatus s) { this.currentAction = s; }
-    public ChefStatus getCurrentAction() { return currentAction; }
-    public Position getPosition() { return position; }
-    public String getName() { return name; }
-    public boolean isMoving() { return isMoving; }
+    // --- METHODS INVENTORY (Penting untuk Interaksi) ---
+
+    public Item getHeldItem() {
+        return heldItem;
+    }
+
+    // Mengambil item dari tangan chef (misal: menaruh ke meja)
+    public Item takeItem() {
+        Item item = heldItem;
+        heldItem = null;
+        return item;
+    }
+
+    // Memberi item ke tangan chef (misal: mengambil dari meja)
+    public void placeItem(Item item) {
+        this.heldItem = item;
+    }
+
+    // --- Getters & Setters Visual ---
+    public int getVisualY() {
+        return screenY + idleYOffset;
+    }
+
+    public int getVisualX() {
+        return screenX;
+    }
+
+    public void setDirection(Direction d) {
+        this.direction = d;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setCurrentAction(ChefStatus s) {
+        this.currentAction = s;
+    }
+
+    public ChefStatus getCurrentAction() {
+        return currentAction;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public void setStatus(ChefStatus busy) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setStatus'");
+    }
 }

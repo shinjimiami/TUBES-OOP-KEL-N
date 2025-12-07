@@ -1,75 +1,60 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.ChefPlayer;
-import nimonscooked.entity.station.Station;
+import nimonscooked.entity.Chef;
 import nimonscooked.interfaces.Preparable;
-import nimonscooked.enums.IngredientState;
-import javax.swing.Timer;
+import nimonscooked.enums.ChefStatus;
 
-
-// berfungsi untuk memotong ingredient yang dapat dipotong
-// hanya akan bergerak apabila chefPlayer berada di sebelah cutting station
 public class CuttingStation extends Station {
-    private final int cuttingDuration = 15000; //15 detik
-    private final int interval = 1000; //buat UI nya nanti
-    private Timer cuttingTimer;
-    private int cuttingStartTime = 0;
-    private int savedTime = 0;
 
     public CuttingStation(String id, float x, float y) {
-        super(id, "Cutting Station", x, y);
+        super(id, "Cutting Station", (int) x, (int) y);
     }
 
     @Override
-    public void interact(ChefPlayer player) {
-        // cek apakah ada item di cutting station
-        if(this.containedItem == null){
-            if(player.getHeldItem() != null){ //menunggu update dari chefPlayer, ini berfungsi untuk ngecek apakah player pegang item atau nggak
-                super.placeItem(player.takeItem()); //item ditaro di cutting station
-                this.savedTime = 0;
+    public void interact(Chef player) {
+        // Case 1: Station Kosong, Pemain bawa item -> Taruh item
+        if (this.containedItem == null && player.getHeldItem() != null) {
+            this.placeItem(player.takeItem());
+        }
+        // Case 2: Station Ada Item, Pemain tangan kosong -> Ambil item
+        else if (this.containedItem != null && player.getHeldItem() == null) {
+            // Cek dulu apakah item perlu diproses?
+            if (this.containedItem instanceof Preparable) {
+                Preparable item = (Preparable) this.containedItem;
+
+                // Jika bisa dipotong, POTONG DULU (Jangan diambil)
+                if (item.canBeChopped()) {
+                    processCutting(player, item);
+                    return; // Keluar, jangan diambil dulu
+                }
             }
-        }
-
-        // lanjut apabila ada item di cutting station
-        // cek apakah item bisa dipotong
-        if(!(containedItem instanceof Preparable)){
-            System.out.println("Item tidak bisa dipotong");
-            return;
-        }
-
-        Preparable preparableItem = (Preparable) containedItem;
-        if(!preparableItem.canBeChopped()){
-            System.out.println("Item tidak bisa dipotong");
-            return;
-        }
-        // potong item
-        preparableItem.chop();
-        startCuttingTimer(preparableItem);
-        System.out.println("Item berhasil dipotong");
-        return;
-    }
-
-    // implementasi pemotongan dengan timer
-    private void startCuttingTimer(Preparable item) {
-        stopCuttingTimer();
-
-        cuttingTimer = new Timer(cuttingDuration, e -> {
-            item.chop();
-            cuttingTimer.stop();
-        });
-
-        cuttingTimer.setRepeats(false);
-        cuttingTimer.start();
-    }
-
-    private void stopCuttingTimer() {
-        if (cuttingTimer != null && cuttingTimer.isRunning()) {
-            cuttingTimer.stop();
+            // Kalau tidak bisa dipotong (sudah jadi/bukan bahan), ambil.
+            player.placeItem(this.takeItem());
         }
     }
 
-    private void finishCutting(Preparable item) {
-        item.chop();
-        // harusnya nanti UI diupdate disini
+    private void processCutting(Chef player, Preparable item) {
+        // Set Player jadi BUSY (tidak bisa gerak)
+        player.setStatus(ChefStatus.BUSY);
+        System.out.println("Mulai memotong " + item.getName() + "...");
+
+        // Jalankan timer di Thread terpisah agar UI tidak freeze total,
+        // tapi status player tetap BUSY.
+        new Thread(() -> {
+            try {
+                // Simulasi memotong 3 detik
+                Thread.sleep(3000);
+
+                // Ubah state item
+                item.chop();
+                System.out.println(item.getName() + " selesai dipotong!");
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                // Kembalikan status player jadi IDLE (bisa gerak lagi)
+                player.setStatus(ChefStatus.IDLE);
+            }
+        }).start();
     }
 }
