@@ -1,5 +1,6 @@
 package nimonscooked.entity.item.kitchenutensil;
 
+import nimonscooked.main.GamePanel;
 import nimonscooked.entity.item.dish.Dish;
 import nimonscooked.interfaces.Preparable;
 import java.util.ArrayList;
@@ -9,9 +10,11 @@ public class Plate extends KitchenUtensils {
     private boolean isDirty = false;
     private Dish dish;
 
-    public Plate(String id, float x, float y) {
-        super(id, "Plate", x, y, new ArrayList<Preparable>());
-        this.dish = new Dish();
+    public Plate(GamePanel gp) {
+        super(gp, new ArrayList<Preparable>());
+        name = "Plate";
+        down1 = setup("/items/kitchen_utensils/plate");
+        this.dish = new Dish(gp);
     }
 
     @Override
@@ -25,7 +28,7 @@ public class Plate extends KitchenUtensils {
         dish.clearDish();
     }
 
-    public Dish getDish() {
+    public Dish getContainedDish() {
         return dish;
     }
 
@@ -35,5 +38,11 @@ public class Plate extends KitchenUtensils {
 
     public boolean isDirty() {
         return isDirty;
+    }
+
+    public void clearDish() {
+        if (dish != null) {
+            dish.clearDish();
+        }
     }
 }

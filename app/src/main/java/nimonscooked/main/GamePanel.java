@@ -9,116 +9,24 @@ import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.InputStream;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-
-import javax.swing.JPanel;
-
-public class GamePanel extends JPanel implements Runnable {
-
-    final int originalTileSize = 32;
-    final int scale = 3;
-    public final int tileSize = originalTileSize * scale;
-    public final int maxScreenCol = 14;
-    public final int maxScreenRow = 10;
-    public final int screenWidth = tileSize * maxScreenCol;
-    public final int screenHeight = tileSize * maxScreenRow;
-
-    TileManager tileManager = new TileManager(this);
-    KeyHandler keyHandler = new KeyHandler();
-    Thread gameThread;
-
-    // Set player default position
-    int playerX = 100;
-    int playerY = 100;
-    int playerSpeed = 4;
-
-    int fps = 60;
-
-    public GamePanel() {
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.black);
-        this.setDoubleBuffered(true);
-//        this.addKeyListener(keyH);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
-
-
-    }
-
-    public void startGameThread(){
-        gameThread = new Thread(this);
-        gameThread.start();
-    }
-
-    @Override
-    public void run() {
-        double drawInterval = (double) 1000000000 / fps;
-        double delta = 0;
-        long lastTime = System.nanoTime();
-        long currentTime;
-        long timer = 0;
-
-        while (gameThread != null) {
-            currentTime = System.nanoTime();
-            delta += (currentTime - lastTime) / drawInterval;
-            timer += (currentTime - lastTime);
-            lastTime = currentTime;
-
-            if (delta >= 1) {
-
-                update();
-                repaint();
-                delta--;
-            }
-
-            if (timer >= 1000000000) {
-                timer = 0;
-            }
-        }
-
-    }
-
-    public void update(){
-
-        player.update();
-
-    }
-
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g;
-
-        g2d.setColor(Color.red);
-
-        g2d.fillRect(playerX, playerY, tileSize, tileSize);
-
-        tileManager.draw(g2d);
-
-        player.draw(g2d);
-
-        g2d.dispose();
-    }
-
->>>>>>> try#1
 
 import nimonscooked.entity.Chef;
 import nimonscooked.action.InputHandler;
 import nimonscooked.object.GameMap;
-import nimonscooked.enums.Direction;
 
 public class GamePanel extends JPanel implements Runnable, KeyListener {
-    final int tileSize = 48;
+    public final int tileSize = 48;
 
     GameMap gameMap = new GameMap();
-    final int screenWidth = tileSize * gameMap.getCols();
-    final int screenHeight = tileSize * gameMap.getRows();
+
+    // Layout constants
+    final int topMargin = 30; // Space for orders
+    final int bottomMargin = 90; // Space for character panel
+    final int mapWidth = tileSize * gameMap.getCols();
+    final int mapHeight = tileSize * gameMap.getRows();
+
+    final int screenWidth = mapWidth;
+    final int screenHeight = topMargin + mapHeight + bottomMargin;
 
     Thread gameThread;
     InputHandler inputHandler;
@@ -136,6 +44,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     Color shinyGold = new Color(255, 215, 0);
     Color shinyGoldGlow = new Color(255, 223, 0, 120); // Transparan
 
+    // Order management
+    private OrderManager orderManager;
+    private long lastOrderTime = 0;
+    private final long orderInterval = 30000; // Generate order every 30 seconds
+    private int frameCounter = 0;
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
@@ -147,6 +61,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         chefs.add(new Chef("C2", "Waddle Dee", 8, 5));
 
         inputHandler = new InputHandler(gameMap, this, chefs);
+        orderManager = OrderManager.getInstance();
+
+        // Generate initial orders
+        orderManager.generateOrder();
+        orderManager.generateOrder();
+        lastOrderTime = System.currentTimeMillis();
 
         try {
             String p1 = "/nimonscooked/resources/KIRBY_";
@@ -213,6 +133,46 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void update() {
         for (Chef c : chefs)
             c.update();
+
+        // Update stations (for cooking/cutting timers)
+        frameCounter++;
+        if (frameCounter % 60 == 0) { // Update every second
+            updateStations();
+        }
+
+        // Generate new orders periodically
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastOrderTime > orderInterval && orderManager.getActiveOrders().size() < 3) {
+            orderManager.generateOrder();
+            lastOrderTime = currentTime;
+            System.out.println("[ORDER] New order generated!");
+        }
+
+        // Update order timers
+        orderManager.update(1.0f / 60.0f);
+    }
+
+    private void updateStations() {
+        long currentTime = System.currentTimeMillis();
+        // Update all cutting stations
+        for (int row = 0; row < gameMap.getRows(); row++) {
+            for (int col = 0; col < gameMap.getCols(); col++) {
+                nimonscooked.entity.station.Station station = gameMap.getStationAt(col, row);
+                if (station instanceof nimonscooked.entity.station.CuttingStation) {
+                    nimonscooked.entity.station.CuttingStation cuttingStation = (nimonscooked.entity.station.CuttingStation) station;
+                    if (cuttingStation.getContainedItem() != null) {
+                        cuttingStation.processCut(1000); // Process 1 second worth of cutting
+                    }
+                } else if (station instanceof nimonscooked.entity.station.CookingStation) {
+                    nimonscooked.entity.station.CookingStation cookingStation = (nimonscooked.entity.station.CookingStation) station;
+                    // Auto-start cooking jika ada item dan belum cooking
+                    if (!cookingStation.isCooking() && cookingStation.getContainedItem() != null) {
+                        cookingStation.startCooking(currentTime);
+                    }
+                    cookingStation.update(currentTime);
+                }
+            }
+        }
     }
 
     @Override
@@ -220,12 +180,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // Draw Map
+        // Draw Map (offset by topMargin)
         char[][] grid = gameMap.getGrid();
         for (int row = 0; row < gameMap.getRows(); row++) {
             for (int col = 0; col < gameMap.getCols(); col++) {
                 int x = col * tileSize;
-                int y = row * tileSize;
+                int y = row * tileSize + topMargin; // Offset map down
                 char tile = grid[row][col];
 
                 if (tile == 'X') {
@@ -247,14 +207,32 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     g2.drawRect(x, y, tileSize, tileSize);
                     g2.drawString(String.valueOf(tile), x + 20, y + 30);
                 }
+
+                // Draw progress bars for stations
+                nimonscooked.entity.station.Station station = gameMap.getStationAt(col, row);
+                if (station instanceof nimonscooked.entity.station.CuttingStation) {
+                    nimonscooked.entity.station.CuttingStation cuttingStation = (nimonscooked.entity.station.CuttingStation) station;
+                    if (cuttingStation.getContainedItem() != null &&
+                            cuttingStation.getSavedTime() > 0) {
+                        drawProgressBar(g2, x, y, cuttingStation.getSavedTime(),
+                                cuttingStation.getCuttingDurationMs(), new Color(70, 130, 180));
+                    }
+                } else if (station instanceof nimonscooked.entity.station.CookingStation) {
+                    nimonscooked.entity.station.CookingStation cookingStation = (nimonscooked.entity.station.CookingStation) station;
+                    if (cookingStation.getContainedItem() != null && cookingStation.isCooking()) {
+                        float progress = cookingStation.getCookingProgress();
+                        Color barColor = progress < 0.8f ? new Color(255, 165, 0) : new Color(255, 69, 0);
+                        drawProgressBar(g2, x, y, (int) (progress * 100), 100, barColor);
+                    }
+                }
             }
         }
 
-        // Draw Chefs
+        // Draw Chefs (offset by topMargin)
         for (int i = 0; i < chefs.size(); i++) {
             Chef c = chefs.get(i);
             int px = c.getVisualX();
-            int py = c.getVisualY();
+            int py = c.getVisualY() + topMargin; // Offset chef position down
 
             BufferedImage[] sprites = (i == 0) ? chef1Sprites : chef2Sprites;
             BufferedImage imageToDraw = null;
@@ -278,6 +256,43 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
                 g2.drawImage(imageToDraw, px, py, tileSize, tileSize, null);
 
+                // --- RENDER HELD ITEM ---
+                if (c.getInventory() != null) {
+                    BufferedImage itemImage = c.getInventory().getSprite();
+                    if (itemImage != null) {
+                        // Draw item above chef's head (smaller size)
+                        int itemSize = tileSize / 2;
+                        int itemX = px + (tileSize - itemSize) / 2;
+                        int itemY = py - itemSize / 2;
+
+                        // Draw white background circle for item
+                        g2.setColor(new Color(255, 255, 255, 200));
+                        g2.fillOval(itemX - 2, itemY - 2, itemSize + 4, itemSize + 4);
+
+                        // Draw item
+                        g2.drawImage(itemImage, itemX, itemY, itemSize, itemSize, null);
+                    } else {
+                        // Fallback: draw colored square if no image
+                        int itemSize = tileSize / 2;
+                        int itemX = px + (tileSize - itemSize) / 2;
+                        int itemY = py - itemSize / 2;
+
+                        g2.setColor(new Color(255, 255, 255, 200));
+                        g2.fillRect(itemX - 2, itemY - 2, itemSize + 4, itemSize + 4);
+                        g2.setColor(new Color(100, 200, 100));
+                        g2.fillRect(itemX, itemY, itemSize, itemSize);
+
+                        // Draw item initial
+                        g2.setColor(Color.BLACK);
+                        g2.setFont(new Font("Arial", Font.BOLD, 10));
+                        String itemName = c.getInventory().getName();
+                        String initial = itemName.length() > 0 ? itemName.substring(0, Math.min(3, itemName.length()))
+                                : "?";
+                        g2.drawString(initial, itemX + 4, itemY + 14);
+                    }
+                }
+                // -----------------------
+
                 // --- INDIKATOR AKTIF (SHINY YELLOW) ---
                 // Hanya muncul jika:
                 // 1. Chef ini adalah chef aktif (i == activeChefIndex)
@@ -299,7 +314,237 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 g2.fillRect(px, py, tileSize, tileSize);
             }
         }
+
+        // --- UI OVERLAY ---
+        drawOrders(g2);
+        drawUI(g2);
+
         g2.dispose();
+    }
+
+    private void drawProgressBar(Graphics2D g2, int x, int y, int current, int max, Color barColor) {
+        int barWidth = tileSize - 8;
+        int barHeight = 6;
+        int barX = x + 4;
+        int barY = y + tileSize - 10;
+
+        // Background
+        g2.setColor(new Color(50, 50, 50));
+        g2.fillRect(barX, barY, barWidth, barHeight);
+
+        // Progress
+        float progress = Math.min(1.0f, (float) current / max);
+        int fillWidth = (int) (barWidth * progress);
+        g2.setColor(barColor);
+        g2.fillRect(barX, barY, fillWidth, barHeight);
+
+        // Border
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawRect(barX, barY, barWidth, barHeight);
+    }
+
+    private void drawOrders(Graphics2D g2) {
+        java.util.List<nimonscooked.entity.order.Order> orders = orderManager.getActiveOrders();
+        if (orders.isEmpty())
+            return;
+
+        // Horizontal strip in top margin
+        int orderWidth = (screenWidth - 10) / Math.max(orders.size(), 1);
+        int orderHeight = topMargin - 4;
+        int startY = 2;
+
+        // Background strip
+        g2.setColor(new Color(30, 30, 30, 200));
+        g2.fillRect(0, 0, screenWidth, topMargin);
+        g2.setColor(new Color(255, 215, 0, 100));
+        g2.fillRect(0, topMargin - 2, screenWidth, 2);
+
+        for (int i = 0; i < orders.size(); i++) {
+            nimonscooked.entity.order.Order order = orders.get(i);
+            int orderX = i * orderWidth + 2;
+
+            // Determine color based on time remaining
+            float timeRatio = order.getRemainingTime() / order.getDuration();
+            Color indicatorColor;
+            if (timeRatio > 0.5f) {
+                indicatorColor = new Color(100, 255, 100); // Green
+            } else if (timeRatio > 0.25f) {
+                indicatorColor = new Color(255, 255, 100); // Yellow
+            } else {
+                indicatorColor = new Color(255, 100, 100); // Red
+            }
+
+            // Order box
+            g2.setColor(new Color(50, 50, 50, 220));
+            g2.fillRect(orderX, startY, orderWidth - 4, orderHeight);
+
+            // Top indicator bar
+            g2.setColor(indicatorColor);
+            g2.fillRect(orderX, startY, orderWidth - 4, 2);
+
+            // Order info - horizontal layout
+            int textX = orderX + 6;
+            int textY = startY + 11;
+
+            // Order number
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 10));
+            g2.drawString("#" + order.getId(), textX, textY);
+
+            // Recipe name
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 8));
+            String recipeName = order.getRecipe().getName().replace(" Burger", "");
+            g2.drawString(recipeName, textX + 20, textY);
+
+            // Requirements - horizontal dengan spacing jelas
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 8));
+            g2.setColor(new Color(200, 200, 200));
+
+            StringBuilder ingredients = new StringBuilder();
+            for (nimonscooked.entity.order.Recipe.Requirement r : order.getRecipe().getRequirements()) {
+                // Singkatan ingredient
+                String ingShort = "";
+                switch (r.name) {
+                    case "Bun":
+                        ingShort = "Bun";
+                        break;
+                    case "Meat":
+                        ingShort = "Meat";
+                        break;
+                    case "Cheese":
+                        ingShort = "Ches";
+                        break;
+                    case "Lettuce":
+                        ingShort = "Lett";
+                        break;
+                    case "Tomato":
+                        ingShort = "Toma";
+                        break;
+                }
+
+                // Simbol state - ASCII only
+                String stateSymbol = "";
+                switch (r.state) {
+                    case RAW:
+                        stateSymbol = "";
+                        break;
+                    case CHOPPED:
+                        stateSymbol = "*";
+                        break;
+                    case COOKING:
+                        stateSymbol = "~";
+                        break;
+                    case COOKED:
+                        stateSymbol = "+";
+                        break;
+                    case BURNED:
+                        stateSymbol = "X";
+                        break;
+                }
+
+                ingredients.append(ingShort).append(stateSymbol).append("  ");
+            }
+            g2.drawString(ingredients.toString().trim(), textX, textY + 10);
+
+            // Time
+            g2.setColor(indicatorColor);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 8));
+            g2.drawString(String.format("%.0fs", order.getRemainingTime()), textX, textY + 18);
+        }
+    }
+
+    private void drawUI(Graphics2D g2) {
+        // Draw semi-transparent panel at bottom
+        int uiHeight = 80;
+        int uiY = screenHeight - uiHeight;
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, uiY, screenWidth, uiHeight);
+
+        // Draw border
+        g2.setColor(new Color(255, 215, 0));
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRect(0, uiY, screenWidth, uiHeight);
+
+        // Display SCORE di tengah atas panel (BIG & PROMINENT)
+        g2.setColor(new Color(255, 215, 0));
+        g2.setFont(new Font("SansSerif", Font.BOLD, 18));
+        String scoreText = "SCORE: " + orderManager.getScore();
+        int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
+        g2.drawString(scoreText, (screenWidth - scoreWidth) / 2, uiY + 20);
+
+        // Display stats di bawah score
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        g2.setColor(new Color(100, 255, 100));
+        String completedText = "Completed: " + orderManager.getCompletedOrders();
+        g2.drawString(completedText, (screenWidth / 2) - 80, uiY + 38);
+
+        g2.setColor(new Color(255, 100, 100));
+        String expiredText = "Expired: " + orderManager.getExpiredOrders();
+        g2.drawString(expiredText, (screenWidth / 2) + 20, uiY + 38);
+
+        // Draw info for each chef
+        int chefUIWidth = screenWidth / chefs.size();
+        for (int i = 0; i < chefs.size(); i++) {
+            Chef chef = chefs.get(i);
+            int uiX = i * chefUIWidth;
+
+            // Highlight active chef
+            if (i == activeChefIndex) {
+                g2.setColor(new Color(255, 215, 0, 100));
+                g2.fillRect(uiX + 5, uiY + 5, chefUIWidth - 10, uiHeight - 10);
+            }
+
+            // Draw chef name
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 14));
+            g2.drawString(chef.getName(), uiX + 15, uiY + 25);
+
+            // Draw held item info
+            if (chef.getInventory() != null) {
+                // Draw item sprite
+                BufferedImage itemSprite = chef.getInventory().getSprite();
+                int itemSize = 40;
+                int itemX = uiX + 15;
+                int itemY = uiY + 30;
+
+                // Background
+                g2.setColor(new Color(255, 255, 255, 230));
+                g2.fillRoundRect(itemX - 2, itemY - 2, itemSize + 4, itemSize + 4, 5, 5);
+
+                if (itemSprite != null) {
+                    g2.drawImage(itemSprite, itemX, itemY, itemSize, itemSize, null);
+                } else {
+                    g2.setColor(new Color(100, 200, 100));
+                    g2.fillRect(itemX, itemY, itemSize, itemSize);
+                }
+
+                // Draw item name
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.PLAIN, 12));
+                String itemName = chef.getInventory().getName();
+                g2.drawString(itemName, itemX + itemSize + 8, itemY + 15);
+
+                // Draw ingredient state if applicable
+                if (chef.getInventory() instanceof nimonscooked.entity.item.ingredient.Ingredient) {
+                    nimonscooked.entity.item.ingredient.Ingredient ing = (nimonscooked.entity.item.ingredient.Ingredient) chef
+                            .getInventory();
+                    g2.setFont(new Font("Arial", Font.ITALIC, 10));
+                    g2.setColor(new Color(200, 200, 200));
+                    g2.drawString(ing.getState().toString(), itemX + itemSize + 8, itemY + 30);
+                }
+            } else {
+                // No item held
+                g2.setColor(new Color(150, 150, 150));
+                g2.setFont(new Font("Arial", Font.ITALIC, 12));
+                g2.drawString("Empty hands", uiX + 15, uiY + 50);
+            }
+        }
+
+        // Draw controls hint
+        g2.setColor(new Color(200, 200, 200));
+        g2.setFont(new Font("Arial", Font.PLAIN, 10));
+        g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, screenHeight - 5);
     }
 
     @Override

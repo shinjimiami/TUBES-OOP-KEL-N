@@ -1,57 +1,109 @@
 package nimonscooked.entity.station;
 
+import nimonscooked.main.GamePanel;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.Item;
 import nimonscooked.entity.item.kitchenutensil.Plate;
+import nimonscooked.entity.item.dish.Dish;
 import nimonscooked.main.OrderManager;
 
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
+
 public class ServingCounter extends Station {
+    private final int ServingReturnTime = 10000;
+    private final List<PlateReturnTimer> returnQueue = new LinkedList<>();
 
-    public ServingCounter(String id, float x, float y) {
-        super(id, "Serving Counter", x, y);
+    private final PlateStorage plateStorage;
+
+    public ServingCounter(GamePanel gp, PlateStorage ps) {
+        super(gp);
+        this.name = "Serving Counter";
+        this.plateStorage = ps;
+
+        if (gp != null) {
+            down1 = setup("/stations/serving_counter");
+            int tilesWide = 1;
+            int tilesHigh = 2;
+            this.imageWidth = gp.tileSize * tilesWide;
+            this.imageHeight = gp.tileSize * tilesHigh;
+            solidArea = new java.awt.Rectangle(0, 0, this.imageWidth, this.imageHeight);
+            solidAreaDefaultX = solidArea.x;
+            solidAreaDefaultY = solidArea.y;
+        }
     }
-    
-    private OrderManager orderManager;
 
-    public ServingCounter() {
-        super();
-        // ID & Nama bisa diset via constructor super atau setter jika ada
+    private static class PlateReturnTimer {
+        final Plate plate;
+        int remainingTime;
+
+        public PlateReturnTimer(Plate p, int time) {
+            this.plate = p;
+            this.remainingTime = time;
+        }
     }
 
-    // PENTING: Panggil ini di GamePanel/SetupGame setelah membuat objeknya
-    public void setOrderManager(OrderManager om) {
-        this.orderManager = om;
+    // ini dipake buat di gamepanel, biar ada tracker waktu untuk servingTime
+    public void updateDirtyPlate(int timePassed) {
+        if (returnQueue.isEmpty())
+            return;
+
+        Iterator<PlateReturnTimer> iterator = returnQueue.iterator();
+        while (iterator.hasNext()) {
+            PlateReturnTimer timer = iterator.next();
+            timer.remainingTime -= timePassed;
+
+            if (timer.remainingTime <= 0) {
+                System.out.println("[SERVING] Returning plate");
+                plateStorage.receiveDirtyPlate(timer.plate);
+                iterator.remove();
+            }
+        }
     }
 
     @Override
-    public void interactionType() {
-        // Biasanya ServingCounter bereaksi terhadap aksi DROP, bukan Interact biasa.
-        // Tapi jika desain Anda menggunakan tombol Interact untuk menyajikan,
-        // Anda butuh referensi ke Chef/Player di parameter method ini.
-        // Karena signature method abstract-nya void interactionType(), 
-        // kita asumsikan validasi dipanggil dari luar (misal dari logic Player).
-    }
+    public void interact(Chef player) {
+        Item heldItem = player.getInventory();
 
-    // Method helper untuk dipanggil saat Player melakukan "Drop Item" di station ini
-    public boolean servePlate(Item item) {
-        if (orderManager == null) {
-            System.err.println("FATAL: OrderManager belum diset di ServingCounter!");
-            return false;
-        }
+        if (heldItem != null) {
+            // yang bisa diserve adalah plate
+            if (heldItem instanceof Plate) {
+                Plate servedPlate = (Plate) player.getInventory();
+                player.setInventory(null);
+                Dish servedDish = servedPlate.getContainedDish();
 
-        if (item instanceof Plate) {
-            Plate plate = (Plate) item;
-            
-            // Validasi isi piring
-            boolean success = orderManager.validateDish(plate.getContents());
-            
-            // Bersihkan piring setelah disajikan (baik sukses atau gagal)
-            // Sesuai spec: piring jadi kotor dan kembali ke storage (logic return to storage dihandle terpisah)
-            plate.clearContents(); 
-            
-            return success;
+                if (servedDish != null) {
+                    // Validate dish dengan OrderManager
+                    boolean success = OrderManager.getInstance().validateDish(servedDish.getComponents());
+
+                    if (success) {
+                        System.out.println("[SERVING] ✓ Order completed! Dish served successfully.");
+                        // keluarin sfx RIGHT
+
+                    } else {
+                        System.out.println("[SERVING] ✗ Wrong dish! This doesn't match any order.");
+                        // keluarin sfx WRONG
+                    }
+
+                    servedPlate.setDirty(true);
+                    servedPlate.clearDish();
+
+                    returnQueue.add(new PlateReturnTimer(servedPlate, ServingReturnTime));
+                    System.out.println("[SERVING] Plate is being cleaned and will return to storage");
+                    return;
+                } else {
+                    System.out.println("[SERVING] Plate is empty - add ingredients first!");
+                    // keluarin sfx WRONG
+                    return;
+                }
+            }
+            // kalo bukan plate, langsung ga diterima
+            System.out.println("[SERVING] Can't serve other than plate");
+            // keluarin sfx WRONG
+            return;
+        } else {
+            return;
         }
-        
-        System.out.println("Hanya bisa menyajikan Plate!");
-        return false;
     }
 }

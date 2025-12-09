@@ -1,7 +1,9 @@
 package nimonscooked.entity;
 
+import nimonscooked.main.GamePanel;
 import nimonscooked.enums.Direction;
 import nimonscooked.enums.ChefStatus;
+import nimonscooked.enums.EntityType;
 import nimonscooked.object.Position;
 import nimonscooked.entity.item.Item;
 
