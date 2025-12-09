@@ -54,20 +54,28 @@ public abstract class Ingredient extends Item implements Preparable {
     }
 
     public void cook() {
-        System.out.println("[INGREDIENT.cook()] Called on " + getName() + " - currentState: " + currentState
-                + ", canBeCooked: " + canBeCooked());
-        if (canBeCooked()) {
-            if (currentState == IngredientState.CHOPPED || currentState == IngredientState.COOKING) {
-                System.out.println("[INGREDIENT.cook()] ✓ Changing state from " + currentState + " → COOKED");
-                setCurrentState(IngredientState.COOKED);
-                System.out.println("[INGREDIENT.cook()] ✓ State changed! New state: " + currentState);
-            } else if (currentState == IngredientState.COOKED) {
-                System.out.println("[INGREDIENT.cook()] ✓ Changing state from COOKED → BURNED");
-                setCurrentState(IngredientState.BURNED);
-            }
-        } else {
-            System.out.println("[INGREDIENT.cook()] ✗ Cannot cook - canBeCooked() returned false");
+        // COOKING → COOKED transition (doesn't need canBeCooked check)
+        if (currentState == IngredientState.COOKING) {
+            setCurrentState(IngredientState.COOKED);
+            System.out.println("[INGREDIENT.cook()] ✓ " + getName() + " COOKING → COOKED");
+            return;
         }
+
+        // COOKED → BURNED transition (doesn't need canBeCooked check)
+        if (currentState == IngredientState.COOKED) {
+            setCurrentState(IngredientState.BURNED);
+            System.out.println("[INGREDIENT.cook()] ✓ " + getName() + " COOKED → BURNED");
+            return;
+        }
+
+        // CHOPPED → COOKED transition (needs canBeCooked check)
+        if (currentState == IngredientState.CHOPPED && canBeCooked()) {
+            setCurrentState(IngredientState.COOKED);
+            System.out.println("[INGREDIENT.cook()] ✓ " + getName() + " CHOPPED → COOKED");
+            return;
+        }
+
+        System.out.println("[INGREDIENT.cook()] ✗ Cannot cook " + getName() + " from state: " + currentState);
     }
 
     protected BufferedImage loadImage(String path) {

@@ -67,17 +67,24 @@ public class FryingPan extends KitchenUtensils implements CookingDevice {
 
     @Override
     public Preparable getFirstIngredient() {
-        if (contents.isEmpty())
+        if (contents.isEmpty()) {
+            System.out.println("[FRYINGPAN] getFirstIngredient: EMPTY");
             return null;
-        return contents.get(0);
+        }
+        Preparable ingredient = contents.get(0);
+        System.out.println(
+                "[FRYINGPAN] getFirstIngredient: " + ingredient.getName() + " (state: " + ingredient.getState() + ")");
+        return ingredient;
     }
 
     @Override
     public void removeContents() {
+        System.out.println("[FRYINGPAN] removeContents() called! Contents size before: " + contents.size());
         if (isCooking) {
             this.isCooking = false;
         }
         contents.clear();
+        System.out.println("[FRYINGPAN] ✓ Contents cleared! Size now: " + contents.size());
     }
 
     @Override

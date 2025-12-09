@@ -32,6 +32,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     InputHandler inputHandler;
     List<Chef> chefs = new ArrayList<>();
     int activeChefIndex = 0;
+    long lastChefSwitchTime = 0;
+    final long CHEF_INDICATOR_DURATION = 3000; // 3 seconds
 
     BufferedImage[] chef1Sprites = new BufferedImage[8];
     BufferedImage[] chef2Sprites = new BufferedImage[8];
@@ -111,6 +113,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public void switchChef() {
         activeChefIndex = (activeChefIndex + 1) % chefs.size();
+        lastChefSwitchTime = System.currentTimeMillis(); // Record switch time
+        System.out.println("[PLAYER] Switching active chef...");
     }
 
     public void startGameThread() {
@@ -297,19 +301,20 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 // -----------------------
 
                 // --- INDIKATOR AKTIF (SHINY YELLOW) ---
-                // Hanya muncul jika:
-                // 1. Chef ini adalah chef aktif (i == activeChefIndex)
-                // 2. Chef ini TIDAK sedang bergerak (!c.isMoving())
+                // Hanya muncul 3 detik setelah switch chef
                 if (i == activeChefIndex && !c.isMoving()) {
-                    // Glow Luar
-                    g2.setColor(shinyGoldGlow);
-                    g2.setStroke(new BasicStroke(5));
-                    g2.drawRect(px - 2, py - 2, tileSize + 4, tileSize + 4);
+                    long timeSinceSwitch = System.currentTimeMillis() - lastChefSwitchTime;
+                    if (timeSinceSwitch < CHEF_INDICATOR_DURATION) {
+                        // Glow Luar
+                        g2.setColor(shinyGoldGlow);
+                        g2.setStroke(new BasicStroke(5));
+                        g2.drawRect(px - 2, py - 2, tileSize + 4, tileSize + 4);
 
-                    // Border Dalam (Solid)
-                    g2.setColor(shinyGold);
-                    g2.setStroke(new BasicStroke(2));
-                    g2.drawRect(px, py, tileSize, tileSize);
+                        // Border Dalam (Solid)
+                        g2.setColor(shinyGold);
+                        g2.setStroke(new BasicStroke(2));
+                        g2.drawRect(px, py, tileSize, tileSize);
+                    }
                 }
                 // --------------------------------------
             } else {
@@ -500,10 +505,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             Chef chef = chefs.get(i);
             int uiX = i * chefUIWidth;
 
-            // Highlight active chef
+            // Highlight active chef (only show for 3 seconds after switch)
             if (i == activeChefIndex) {
-                g2.setColor(new Color(255, 215, 0, 100));
-                g2.fillRect(uiX + 5, uiY + 5, chefUIWidth - 10, uiHeight - 10);
+                long timeSinceSwitch = System.currentTimeMillis() - lastChefSwitchTime;
+                if (timeSinceSwitch < CHEF_INDICATOR_DURATION) {
+                    g2.setColor(new Color(255, 215, 0, 100));
+                    g2.fillRect(uiX + 5, uiY + 5, chefUIWidth - 10, uiHeight - 10);
+                }
             }
 
             // Draw chef name
