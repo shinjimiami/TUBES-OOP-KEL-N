@@ -12,8 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class WashingStation extends Station {
-    private final int WashDuration = 5000;
+    private final int WashDuration = 3000; // 3 seconds (was 5s)
     private int savedTime = 0;
+    private Chef busyChef = null; // Track which chef is washing
 
     private final Deque<Plate> cleanPlateStack = new LinkedList<>();
     private final Deque<Plate> dirtyPlateStack = new LinkedList<>();
@@ -38,6 +39,12 @@ public class WashingStation extends Station {
         if (!(containedItem instanceof Plate) || !((Plate) containedItem).isDirty()) {
             this.savedTime = 0;
 
+            // Release chef if washing stopped
+            if (busyChef != null) {
+                busyChef.setCurrentAction(nimonscooked.enums.ChefStatus.IDLE);
+                busyChef = null;
+            }
+
             // kalo kosong, ambil dirty plate baru
             if (containedItem == null && !dirtyPlateStack.isEmpty()) {
                 super.placeItem(dirtyPlateStack.pop());
@@ -58,9 +65,16 @@ public class WashingStation extends Station {
 
             super.takeItem();
 
+            // Release chef from BUSY status
+            if (busyChef != null) {
+                busyChef.setCurrentAction(nimonscooked.enums.ChefStatus.IDLE);
+                System.out
+                        .println("[WASH] Piring selesai dicuci dan dipindahkan ke tumpukan bersih. Chef is now IDLE.");
+                busyChef = null;
+            }
+
             // Pindahkan piring ke stack bersih
             cleanPlateStack.push(plateToWash);
-            System.out.println("[WASH] Piring selesai dicuci dan dipindahkan ke tumpukan bersih.");
 
             // Otomatis mulai mencuci piring kotor berikutnya jika ada
             if (!dirtyPlateStack.isEmpty()) {
@@ -71,6 +85,22 @@ public class WashingStation extends Station {
         }
 
         return false;
+    }
+
+    public void startWashing(Chef chef) {
+        if (busyChef == null && containedItem instanceof Plate && ((Plate) containedItem).isDirty()) {
+            busyChef = chef;
+            chef.setCurrentAction(nimonscooked.enums.ChefStatus.BUSY);
+            System.out.println("[WASH] Chef is now BUSY washing plate");
+        }
+    }
+
+    public boolean isBusy() {
+        return busyChef != null;
+    }
+
+    public Chef getBusyChef() {
+        return busyChef;
     }
 
     @Override
@@ -87,16 +117,17 @@ public class WashingStation extends Station {
                 return;
             }
 
-            // Setelah item ditaruh, cek apakah area cuci bisa diisi
+            // Setelah item ditaruh, cek apakah area cuci bisa diisi dan auto-start washing
             if (this.containedItem == null && !dirtyPlateStack.isEmpty()) {
                 super.placeItem(dirtyPlateStack.pop());
                 this.savedTime = 0;
+                startWashing(player); // Auto-start washing with BUSY status
             }
             return;
         }
 
-        // mengambil piring bersih
-        if (heldItem == null && !cleanPlateStack.isEmpty()) {
+        // mengambil piring bersih (only if not currently washing)
+        if (heldItem == null && !cleanPlateStack.isEmpty() && busyChef == null) {
             player.setInventory(cleanPlateStack.pop());
             System.out.println("[WASH] Mengambil 1 piring bersih.");
             return;

@@ -154,7 +154,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     private void updateStations() {
         long currentTime = System.currentTimeMillis();
-        // Update all cutting stations
+        // Update all stations
         for (int row = 0; row < gameMap.getRows(); row++) {
             for (int col = 0; col < gameMap.getCols(); col++) {
                 nimonscooked.entity.station.Station station = gameMap.getStationAt(col, row);
@@ -163,6 +163,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     if (cuttingStation.getContainedItem() != null) {
                         cuttingStation.processCut(1000); // Process 1 second worth of cutting
                     }
+                } else if (station instanceof nimonscooked.entity.station.WashingStation) {
+                    nimonscooked.entity.station.WashingStation washingStation = (nimonscooked.entity.station.WashingStation) station;
+                    washingStation.processWash(1000); // Process 1 second worth of washing
                 } else if (station instanceof nimonscooked.entity.station.CookingStation) {
                     nimonscooked.entity.station.CookingStation cookingStation = (nimonscooked.entity.station.CookingStation) station;
                     // Auto-start cooking jika ada item dan belum cooking
@@ -360,6 +363,31 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g2.setColor(new Color(255, 215, 0, 100));
         g2.fillRect(0, topMargin - 2, screenWidth, 2);
 
+        // SCOREBOARD - kanan atas (tidak menimpa orders)
+        int scoreBoxWidth = 150;
+        int scoreBoxX = screenWidth - scoreBoxWidth - 5;
+
+        // Background box untuk score
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.fillRoundRect(scoreBoxX, 2, scoreBoxWidth, topMargin - 4, 5, 5);
+
+        // Border
+        g2.setColor(new Color(255, 215, 0));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(scoreBoxX, 2, scoreBoxWidth, topMargin - 4, 5, 5);
+
+        // Score text
+        g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+        String scoreText = "SCORE: " + orderManager.getScore();
+        g2.drawString(scoreText, scoreBoxX + 10, 14);
+
+        // Stats
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 8));
+        g2.setColor(new Color(100, 255, 100));
+        g2.drawString("✓ " + orderManager.getCompletedOrders(), scoreBoxX + 10, 24);
+        g2.setColor(new Color(255, 100, 100));
+        g2.drawString("✗ " + orderManager.getExpiredOrders(), scoreBoxX + 70, 24);
+
         for (int i = 0; i < orders.size(); i++) {
             nimonscooked.entity.order.Order order = orders.get(i);
             int orderX = i * orderWidth + 2;
@@ -465,23 +493,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g2.setColor(new Color(255, 215, 0));
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(0, uiY, screenWidth, uiHeight);
-
-        // Display SCORE di tengah atas panel (BIG & PROMINENT)
-        g2.setColor(new Color(255, 215, 0));
-        g2.setFont(new Font("SansSerif", Font.BOLD, 18));
-        String scoreText = "SCORE: " + orderManager.getScore();
-        int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
-        g2.drawString(scoreText, (screenWidth - scoreWidth) / 2, uiY + 20);
-
-        // Display stats di bawah score
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        g2.setColor(new Color(100, 255, 100));
-        String completedText = "Completed: " + orderManager.getCompletedOrders();
-        g2.drawString(completedText, (screenWidth / 2) - 80, uiY + 38);
-
-        g2.setColor(new Color(255, 100, 100));
-        String expiredText = "Expired: " + orderManager.getExpiredOrders();
-        g2.drawString(expiredText, (screenWidth / 2) + 20, uiY + 38);
 
         // Draw info for each chef
         int chefUIWidth = screenWidth / chefs.size();
