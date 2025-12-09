@@ -1,6 +1,7 @@
 package nimonscooked.object;
 
 import nimonscooked.entity.station.*;
+import nimonscooked.enums.IngredientType;
 
 public class GameMap {
     private char[][] grid;
@@ -12,16 +13,17 @@ public class GameMap {
 
     public GameMap() {
         // Layout Map Type C: Burger Map (Sesuai Spesifikasi)
+        // M=Meat, B=Bun, H=Cheese, L=Lettuce, O=Tomato (changed from 'I')
         grid = new char[][] {
-                { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'I', 'A', 'A', 'X', 'X', 'X', 'X' },
+                { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'O', 'A', 'A', 'X', 'X', 'X', 'X' },
                 { 'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
-                { 'I', '.', '.', 'X', 'X', 'R', 'V', '.', '.', 'R', 'X', '.', '.', 'P' },
+                { 'M', '.', '.', 'X', 'X', 'R', 'V', '.', '.', 'R', 'X', '.', '.', 'P' },
                 { 'C', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
-                { 'I', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
+                { 'B', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
                 { 'C', '.', '.', 'X', 'X', 'R', '.', '.', 'V', 'R', 'X', '.', '.', 'A' },
-                { 'I', '.', '.', 'A', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
+                { 'L', '.', '.', 'A', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
                 { 'A', 'W', 'W', 'A', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
-                { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'I', 'A', 'A', 'X', '.', '.', 'T' },
+                { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'H', 'A', 'A', 'X', '.', '.', 'T' },
                 { 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X' }
         };
 
@@ -38,15 +40,20 @@ public class GameMap {
                 String id = "ST-" + x + "-" + y; // ID Unik: misal ST-0-1
 
                 // Factory sederhana untuk membuat objek station yang sesuai
+                // TODO: Pass actual GamePanel instance instead of null
                 switch (tile) {
-                    case 'C' -> stationGrid[y][x] = new CuttingStation(id, x, y);
-                    case 'R' -> stationGrid[y][x] = new CookingStation(id, x, y);
-                    case 'W' -> stationGrid[y][x] = new WashingStation(id, x, y);
-                    case 'S' -> stationGrid[y][x] = new ServingCounter(id, x, y);
-                    case 'I' -> stationGrid[y][x] = new IngredientStorage(id, x, y);
-                    case 'P' -> stationGrid[y][x] = new PlateStorage(id, x, y);
-                    case 'T' -> stationGrid[y][x] = new TrashStation(id, x, y);
-                    case 'A' -> stationGrid[y][x] = new AssemblyStation(id, x, y);
+                    case 'C' -> stationGrid[y][x] = new CuttingStation(null);
+                    case 'R' -> stationGrid[y][x] = new CookingStation(null);
+                    case 'W' -> stationGrid[y][x] = new WashingStation(null);
+                    case 'S' -> stationGrid[y][x] = new ServingCounter(null, null);
+                    case 'M' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.MEAT);
+                    case 'B' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.BUN);
+                    case 'H' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.CHEESE);
+                    case 'L' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.LETTUCE);
+                    case 'O' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.TOMATO);
+                    case 'P' -> stationGrid[y][x] = new PlateStorage(null);
+                    case 'T' -> stationGrid[y][x] = new TrashStation(null);
+                    case 'A' -> stationGrid[y][x] = new AssemblyStation(null);
                     // '.' (Lantai), 'X' (Tembok), 'V' (Spawn) tidak punya objek station
                     default -> stationGrid[y][x] = null;
                 }

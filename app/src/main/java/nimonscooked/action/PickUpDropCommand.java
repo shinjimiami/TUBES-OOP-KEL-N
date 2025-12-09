@@ -63,28 +63,7 @@ public class PickUpDropCommand implements Command {
     }
 
     private Item getIngredientFromStorage(int x, int y) {
-
-        String uniqueId = "ING-" + System.currentTimeMillis();
-
-        if (y == 0 && x == 7)
-            return new Bun(uniqueId, x, y, IngredientState.RAW);
-
-        // Baris 2, Kolom 0 -> Meat
-        if (y == 2 && x == 0)
-            return new Meat(uniqueId, x, y, IngredientState.RAW);
-
-        // Baris 4, Kolom 0 -> Lettuce
-        if (y == 4 && x == 0)
-            return new Lettuce(uniqueId, x, y, IngredientState.RAW);
-
-        // Baris 6, Kolom 0 -> Tomato
-        if (y == 6 && x == 0)
-            return new Tomato(uniqueId, x, y, IngredientState.RAW);
-
-        // Baris 8, Kolom 7 -> Cheese
-        if (y == 8 && x == 7)
-            return new Cheese(uniqueId, x, y, IngredientState.RAW);
-
-        return new Bun(uniqueId, x, y, IngredientState.RAW);
+        // Ingredient creation is now handled by IngredientStorage station
+        return null;
     }
 }

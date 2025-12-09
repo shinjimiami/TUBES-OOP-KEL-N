@@ -18,11 +18,15 @@ public class InputHandler {
         keyBindings.put(KeyEvent.VK_S, new MoveCommand(Direction.DOWN, 0, 1, gameMap, chefs));
         keyBindings.put(KeyEvent.VK_A, new MoveCommand(Direction.LEFT, -1, 0, gameMap, chefs));
         keyBindings.put(KeyEvent.VK_D, new MoveCommand(Direction.RIGHT, 1, 0, gameMap, chefs));
-        
-        // Actions
+
+        // Basic Actions
         keyBindings.put(KeyEvent.VK_V, new InteractCommand(gameMap));
         keyBindings.put(KeyEvent.VK_C, new PickUpDropCommand(gameMap));
         keyBindings.put(KeyEvent.VK_B, new SwitchChefCommand(panel));
+
+        // Station-specific Actions
+        keyBindings.put(KeyEvent.VK_F, new CookingCommand(gameMap)); // F = Start/Stop cooking
+        keyBindings.put(KeyEvent.VK_X, new CuttingCommand(gameMap)); // X = Manual cut (optional)
     }
 
     public void handleInput(int keyCode, Chef activeChef) {

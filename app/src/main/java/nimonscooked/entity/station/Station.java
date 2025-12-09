@@ -19,17 +19,17 @@ public abstract class Station extends Entity {
         collision = true;
     }
 
-    abstract void interact(Chef player);
+    public abstract void interact(Chef player);
 
-    public Item takeItem(){
+    public Item takeItem() {
         Item item = this.containedItem;
         this.containedItem = null;
         this.isOccupied = false;
         return item;
     }
 
-    public boolean placeItem(Item item){
-        if(this.isOccupied){
+    public boolean placeItem(Item item) {
+        if (this.isOccupied) {
             return false;
         }
         this.containedItem = item;
@@ -45,11 +45,11 @@ public abstract class Station extends Entity {
         return containedItem;
     }
 
-    public Item peekItem(){
+    public Item peekItem() {
         return this.containedItem;
     }
 
     public void setContainedItem(Item containedItem) {
         this.containedItem = containedItem;
-    }  
+    }
 }

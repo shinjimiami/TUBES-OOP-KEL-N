@@ -1,4 +1,4 @@
-package nimonscooked.entity.station;
+package nimonscooked.object;
 
 import nimonscooked.entity.item.dish.Dish;
 

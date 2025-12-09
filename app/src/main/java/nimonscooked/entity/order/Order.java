@@ -14,7 +14,6 @@ public class Order {
         this.timeLeft = duration;
     }
 
-
     public void updateTimer(float deltaTime) {
         if (timeLeft > 0) {
             timeLeft -= deltaTime;
@@ -25,7 +24,23 @@ public class Order {
         return timeLeft <= 0;
     }
 
-    public int getId() { return id; }
-    public Recipe getRecipe() { return recipe; }
-    public int getReward() { return reward; }
+    public int getId() {
+        return id;
+    }
+
+    public Recipe getRecipe() {
+        return recipe;
+    }
+
+    public int getReward() {
+        return reward;
+    }
+
+    public float getRemainingTime() {
+        return timeLeft;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
 }

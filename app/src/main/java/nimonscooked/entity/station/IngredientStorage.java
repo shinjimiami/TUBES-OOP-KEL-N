@@ -22,44 +22,42 @@ public class IngredientStorage extends Station {
         this.type = type;
         this.name = type + " Storage";
 
-
-        down1 = setup("/stations/ingredient_storage");
-        int tilesWide = 1;
-        int tilesHigh = 1;
-        this.imageWidth = gp.tileSize * tilesWide;
-        this.imageHeight = gp.tileSize * tilesHigh;
-        solidArea.x = 0;
-        solidArea.y = 0;
-        solidArea.width = this.imageWidth;
-        solidArea.height = this.imageHeight;
-        solidAreaDefaultX = solidArea.x;
-        solidAreaDefaultY = solidArea.y;
+        if (gp != null) {
+            down1 = setup("/stations/ingredient_storage");
+            int tilesWide = 1;
+            int tilesHigh = 1;
+            this.imageWidth = gp.tileSize * tilesWide;
+            this.imageHeight = gp.tileSize * tilesHigh;
+            solidArea = new java.awt.Rectangle(0, 0, this.imageWidth, this.imageHeight);
+            solidAreaDefaultX = solidArea.x;
+            solidAreaDefaultY = solidArea.y;
+        }
     }
-    
-	@Override
-	public void interact(Chef player) {
-		Item heldItem = player.getHeldItem();
+
+    @Override
+    public void interact(Chef player) {
+        Item heldItem = player.getInventory();
 
         // kalo tangan chef kosong, bisa ambil ingredient
-        if(heldItem == null){
+        if (heldItem == null) {
             Ingredient newIngredient = creteIngredientByType(gp, this.type);
 
-            if(newIngredient != null){
-                player.placeItem(newIngredient);
+            if (newIngredient != null) {
+                player.setInventory(newIngredient);
                 System.out.println("[STORAGE] take" + this.type);
-            } else{
+            } else {
                 System.out.println("[STORAGE] failed to take new ingredient");
             }
             return;
         }
         System.out.println("[STORAGE] player is already holding an item, can't take a new ingredient");
-	}    
+    }
 
     // factory pattern
-    public Ingredient creteIngredientByType(GamePanel gp, IngredientType type){
+    public Ingredient creteIngredientByType(GamePanel gp, IngredientType type) {
         final IngredientState defaultState = IngredientState.RAW;
 
-        switch(type){
+        switch (type) {
             case BUN:
                 return new Bun(gp, defaultState);
             case CHEESE:

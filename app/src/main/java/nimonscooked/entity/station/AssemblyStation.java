@@ -15,56 +15,70 @@ public class AssemblyStation extends Station {
         super(gp);
         this.name = "Assembly Station";
 
-        down1 = setup("/stations/assembly_station");
-        int tilesWide = 1;
-        int tilesHigh = 1;
-        this.imageWidth = gp.tileSize * tilesWide;
-        this.imageHeight = gp.tileSize * tilesHigh;
-        solidArea.x = 0;
-        solidArea.y = 0;
-        solidArea.width = this.imageWidth;
-        solidArea.height = this.imageHeight;
-        solidAreaDefaultX = solidArea.x;
-        solidAreaDefaultY = solidArea.y;
+        if (gp != null) {
+            down1 = setup("/stations/assembly_station");
+            int tilesWide = 1;
+            int tilesHigh = 1;
+            this.imageWidth = gp.tileSize * tilesWide;
+            this.imageHeight = gp.tileSize * tilesHigh;
+            solidArea = new java.awt.Rectangle(0, 0, this.imageWidth, this.imageHeight);
+            solidAreaDefaultX = solidArea.x;
+            solidAreaDefaultY = solidArea.y;
+        }
     }
-	@Override
-	public void interact(Chef player) {
-		Item item = player.getHeldItem();
+
+    @Override
+    public void interact(Chef player) {
+        Item item = player.getInventory();
 
         // station kosong, bisa meletakkan item apapun
-        if(this.containedItem == null){
-            if(item != null){
-                super.placeItem(player.takeItem());
+        if (this.containedItem == null) {
+            if (item != null) {
+                super.placeItem(player.getInventory());
+                player.setInventory(null);
                 System.out.println("[ASSEMBLY] Item placed on counter");
-            } return;
+            }
+            return;
         }
-        
 
         // station ada item, mengambil atau merakit item tersebut
-        
+
         // mengambil barang
-        if(item == null){
-            player.placeItem(super.takeItem());
+        if (item == null) {
+            player.setInventory(super.takeItem());
             System.out.println("[ASSEMBLY] Mengambil item dari counter");
             return;
         }
 
-        // merakit
-        if(this.containedItem instanceof Plate && item instanceof Preparable){
+        // merakit - PLATE + INGREDIENT
+        if (this.containedItem instanceof Plate && item instanceof Preparable) {
             Plate plate = (Plate) this.containedItem;
             Preparable ingredient = (Preparable) item;
             Dish dish = plate.getContainedDish();
 
-            if(dish.addComponent(ingredient)){
-                player.takeItem();
-                System.out.println("[ASSEMBLY] Added " + ingredient.getName());
+            if (dish.addComponent(ingredient)) {
+                player.setInventory(null);
+                System.out.println("[ASSEMBLY] Added " + ingredient.getName() + " to plate");
                 return;
             }
-        } else{
-            System.out.println("[ASSEMBLY] Can't add that item");
-            return;
         }
 
-        System.out.println("[ASSEMBLY] Counter is FULL. Can't place more items");
-	}    
+        // merakit - FRYING PAN + INGREDIENT
+        if (this.containedItem instanceof nimonscooked.interfaces.CookingDevice && item instanceof Preparable) {
+            nimonscooked.interfaces.CookingDevice device = (nimonscooked.interfaces.CookingDevice) this.containedItem;
+            Preparable ingredient = (Preparable) item;
+
+            if (device.canAccept(ingredient)) {
+                device.addIngredient(ingredient);
+                player.setInventory(null);
+                System.out.println("[ASSEMBLY] Added " + ingredient.getName() + " to cooking device");
+                return;
+            } else {
+                System.out.println("[ASSEMBLY] Cooking device is full or busy");
+                return;
+            }
+        }
+
+        System.out.println("[ASSEMBLY] Can't combine these items");
+    }
 }
