@@ -1,0 +1,11 @@
+1 = Floor 1
+2 = Floor 2
+3 = Wall
+4 = Cutting station (C)
+5 = Cooking Station (R)
+6 = Assembly Station (A)
+7 = Washing Station (W)
+8 = Serving Counter (S)
+9 = Ingredient Storage (I)
+10 = Plate Storage (P)
+11 = Trash Station (T)
