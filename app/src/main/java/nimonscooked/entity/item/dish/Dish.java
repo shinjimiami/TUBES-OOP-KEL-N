@@ -17,16 +17,36 @@ public class Dish extends Item {
     }
 
     public boolean addComponent(Preparable component) {
-        if(component == null){
+        if (component == null) {
             return false;
         }
 
-        if(component.getState() == IngredientState.RAW || component.getState() == IngredientState.BURNED) {
+        // BURNED ingredients are always rejected
+        if (component.getState() == IngredientState.BURNED) {
             return false;
         }
 
-        for(Preparable existingComponent : components){
-            if(existingComponent.getName().equals(component.getName())){
+        // RAW ingredients are only allowed if they can't be chopped or cooked (e.g.,
+        // Bun)
+        if (component.getState() == IngredientState.RAW) {
+            if (component.canBeChopped() || component.canBeCooked()) {
+                return false; // RAW ingredients that SHOULD be processed are rejected
+            }
+            // RAW ingredients that DON'T need processing (like Bun) are allowed
+        }
+
+        // COOKING ingredients are rejected (must wait until COOKED)
+        if (component.getState() == IngredientState.COOKING) {
+            System.out.println("[DISH] Rejected: " + component.getName() + " is still COOKING (not COOKED yet)");
+            return false;
+        }
+
+        // CHOPPED ingredients are allowed (cheese, lettuce, tomato)
+        // COOKED ingredients are allowed (meat after cooking)
+
+        // Prevent duplicate ingredients
+        for (Preparable existingComponent : components) {
+            if (existingComponent.getName().equals(component.getName())) {
                 return false;
             }
         }
@@ -42,8 +62,8 @@ public class Dish extends Item {
         return components.isEmpty();
     }
 
-    public void clearDish(){
+    public void clearDish() {
         components.clear();
     }
-    
+
 }

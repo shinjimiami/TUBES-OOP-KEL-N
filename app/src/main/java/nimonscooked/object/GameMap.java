@@ -1,6 +1,7 @@
 package nimonscooked.object;
 
 import nimonscooked.entity.station.*;
+import nimonscooked.entity.station.KitchenUtensilStorage;
 import nimonscooked.enums.IngredientType;
 
 public class GameMap {
@@ -13,10 +14,10 @@ public class GameMap {
 
     public GameMap() {
         // Layout Map Type C: Burger Map (Sesuai Spesifikasi)
-        // M=Meat, B=Bun, H=Cheese, L=Lettuce, O=Tomato (changed from 'I')
+        // M=Meat, B=Bun, H=Cheese, L=Lettuce, O=Tomato, F=FryingPan, P=Plate
         grid = new char[][] {
                 { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'O', 'A', 'A', 'X', 'X', 'X', 'X' },
-                { 'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
+                { 'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'F' },
                 { 'M', '.', '.', 'X', 'X', 'R', 'V', '.', '.', 'R', 'X', '.', '.', 'P' },
                 { 'C', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
                 { 'B', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
@@ -52,6 +53,7 @@ public class GameMap {
                     case 'L' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.LETTUCE);
                     case 'O' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.TOMATO);
                     case 'P' -> stationGrid[y][x] = new PlateStorage(null);
+                    case 'F' -> stationGrid[y][x] = new KitchenUtensilStorage(null); // FryingPan storage
                     case 'T' -> stationGrid[y][x] = new TrashStation(null);
                     case 'A' -> stationGrid[y][x] = new AssemblyStation(null);
                     // '.' (Lantai), 'X' (Tembok), 'V' (Spawn) tidak punya objek station
