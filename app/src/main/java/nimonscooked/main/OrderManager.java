@@ -73,7 +73,7 @@ public class OrderManager {
         if (activeOrders.size() < 4) { // Max 4 order aktif
             Recipe r = recipes.get(random.nextInt(recipes.size()));
             activeOrders.add(new Order(++orderCounter, r, 60)); // Durasi 60 detik
-            System.out.println("NEW ORDER: " + r.getName());
+            System.out.println("[ORDER] NEW ORDER: " + r.getName());
         }
     }
 
@@ -83,7 +83,7 @@ public class OrderManager {
             if (o.isExpired()) {
                 activeOrders.remove(o);
                 expiredOrders++;
-                System.out.println("ORDER EXPIRED: " + o.getRecipe().getName() + " (-10 points)");
+                System.out.println("[ORDER] ORDER EXPIRED: " + o.getRecipe().getName() + " (-10 points)");
                 score = Math.max(0, score - 10); // Kurangi score tapi tidak boleh negatif
             }
         }

@@ -73,7 +73,7 @@ public abstract class Entity {
     }
 
     public boolean use(Entity chef) {
-        System.out.println("[Player] Trying to use " + this.name + " (Default Action is do nothing)");
+        System.out.println("[PLAYER] Trying to use " + this.name + " (Default Action is do nothing)");
         return false;
     }
 

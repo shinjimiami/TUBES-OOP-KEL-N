@@ -21,7 +21,7 @@ public class CuttingCommand implements Command {
     public void execute(Chef chef) {
         // 1. Validasi Status Chef
         if (chef.getCurrentAction() == ChefStatus.BUSY) {
-            System.out.println(chef.getName() + " is busy!");
+            System.out.println("[CUTTING] " + chef.getName() + " is busy!");
             return;
         }
 

@@ -13,7 +13,7 @@ public class SwitchChefCommand implements Command {
     @Override
     public void execute(Chef activeChef) {
 
-        System.out.println("Switching active chef...");
+        System.out.println("[PLAYER] Switching active chef...");
         gamePanel.switchChef();
     }
 }

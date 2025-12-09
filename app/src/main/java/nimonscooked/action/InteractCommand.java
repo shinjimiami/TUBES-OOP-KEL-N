@@ -16,7 +16,7 @@ public class InteractCommand implements Command {
     public void execute(Chef chef) {
         // 1. Validasi Status Chef
         if (chef.getCurrentAction() == ChefStatus.BUSY) {
-            System.out.println(chef.getName() + " is busy!");
+            System.out.println("[INTERACT]" + chef.getName() + " is busy!");
             return;
         }
 
@@ -35,10 +35,10 @@ public class InteractCommand implements Command {
         Station targetStation = map.getStationAt(targetX, targetY);
 
         if (targetStation != null) {
-            System.out.println(chef.getName() + " interacting with " + targetStation.name);
+            System.out.println("[INTERACT] " + chef.getName() + " interacting with " + targetStation.name);
             targetStation.interact(chef);
         } else {
-            System.out.println("Nothing to interact with at (" + targetX + "," + targetY + ")");
+            System.out.println("[INTERACT] Nothing to interact with at (" + targetX + "," + targetY + ")");
         }
     }
 }

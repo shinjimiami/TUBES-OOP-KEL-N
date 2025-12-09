@@ -47,6 +47,6 @@ public class MoveCommand implements Command {
         }
 
         chef.attemptMove(direction, deltaX, deltaY);
-        System.out.println(chef.getName() + " moving to (" + nextX + ", " + nextY + ")");
+        System.out.println("[PLAYER] " + chef.getName() + " moving to (" + nextX + ", " + nextY + ")");
     }
 }

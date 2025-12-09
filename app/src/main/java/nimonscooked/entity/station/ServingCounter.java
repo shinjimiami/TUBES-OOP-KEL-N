@@ -78,11 +78,11 @@ public class ServingCounter extends Station {
                     boolean success = OrderManager.getInstance().validateDish(servedDish.getComponents());
 
                     if (success) {
-                        System.out.println("[SERVING] ✓ Order completed! Dish served successfully.");
+                        System.out.println("[SERVING] Order completed! Dish served successfully.");
                         // keluarin sfx RIGHT
 
                     } else {
-                        System.out.println("[SERVING] ✗ Wrong dish! This doesn't match any order.");
+                        System.out.println("[SERVING] Wrong dish! This doesn't match any order.");
                         // keluarin sfx WRONG
                     }
 

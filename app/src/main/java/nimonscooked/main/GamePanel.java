@@ -69,7 +69,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         lastOrderTime = System.currentTimeMillis();
 
         try {
-            String p1 = "/nimonscooked/resources/KIRBY_";
+            String p1 = "/chef/KIRBY_";
             chef1Sprites[0] = load(p1 + "BELAKANG - KIRI NAIK.png");
             chef1Sprites[1] = load(p1 + "BELAKANG - KANAN NAIK.png");
             chef1Sprites[2] = load(p1 + "DEPAN - KIRI NAIK.png");
@@ -79,7 +79,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             chef1Sprites[6] = load(p1 + "KANAN - KIRI NAIK.png");
             chef1Sprites[7] = load(p1 + "KANAN - KANAN NAIK.png");
 
-            String p2 = "/nimonscooked/resources/WADDLE DEE_";
+            String p2 = "/chef/WADDLE DEE_";
             chef2Sprites[0] = load(p2 + "BELAKANG - KIRI ATAS.png");
             chef2Sprites[1] = load(p2 + "BELAKANG - KANAN ATAS.png");
             chef2Sprites[2] = load(p2 + "DEPAN - KIRI ATAS.png");

@@ -38,10 +38,10 @@ public class PickUpDropCommand implements Command {
 
         if (tileType == 'T') {
             if (chef.getInventory() != null) {
-                System.out.println("Item dibuang ke Trash: " + chef.getInventory().getName());
+                System.out.println("[ACTION] Item dibuang ke Trash: " + chef.getInventory().getName());
                 chef.setInventory(null); // Hapus item dari inventory
             } else {
-                System.out.println("Tangan kosong, tidak ada yang bisa dibuang.");
+                System.out.println("[ACTION] Tangan kosong, tidak ada yang bisa dibuang.");
             }
             return;
         }
@@ -51,19 +51,19 @@ public class PickUpDropCommand implements Command {
                 Item newItem = getIngredientFromStorage(targetX, targetY);
                 if (newItem != null) {
                     chef.setInventory(newItem);
-                    System.out.println("Mengambil " + newItem.getName() + " dari Storage.");
+                    System.out.println("[ACTION] Mengambil " + newItem.getName() + " dari Storage.");
                 }
             } else {
-                System.out.println("Tangan penuh! Tidak bisa mengambil bahan.");
+                System.out.println("[ACTION] Tangan penuh! Tidak bisa mengambil bahan.");
             }
             return;
         }
 
-        System.out.println("Berinteraksi dengan tile: " + tileType + " di (" + targetX + "," + targetY + ")");
+        System.out.println("[ACTION] Berinteraksi dengan tile: " + tileType + " di (" + targetX + "," + targetY + ")");
     }
 
     private Item getIngredientFromStorage(int x, int y) {
-        // Ingredient creation is now handled by IngredientStorage station
+        // ngambil dari ingredientStorage
         return null;
     }
 }
