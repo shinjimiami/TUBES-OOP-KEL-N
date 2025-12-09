@@ -1,5 +1,6 @@
 package nimonscooked.entity.item.kitchenutensil;
 
+import nimonscooked.main.GamePanel;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.entity.item.Item;
 import java.util.List;
@@ -7,9 +8,10 @@ import java.util.List;
 public abstract class KitchenUtensils extends Item {
     protected List<Preparable> contents;
     
-    public KitchenUtensils(String id, String name, int x, int y, List<Preparable> contents) {
-        super(id, name, x, y);
+    public KitchenUtensils(GamePanel gp, List<Preparable> contents) {
+        super(gp);
         this.contents = contents;
+        
     }
 
     public abstract List<Preparable> getContents();

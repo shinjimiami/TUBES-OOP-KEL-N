@@ -1,6 +1,7 @@
 package nimonscooked.entity.item.kitchenutensil;
 
-import nimonscooked.entity.item.kitchenutensil.CookingDevice;
+import nimonscooked.main.GamePanel;
+import nimonscooked.interfaces.CookingDevice;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.entity.item.kitchenutensil.KitchenUtensils;
 import java.util.ArrayList;
@@ -10,8 +11,11 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
     private final int MAX_CAPACITY = 1;
     private boolean isCooking = false;
 
-    public FryingPan(String id, int x, int y) {
-        super(id, "FryingPan", x, y, new ArrayList<Preparable>());
+    public FryingPan(GamePanel gp) {
+        super(gp, new ArrayList<Preparable>());
+        name = "Frying Pan";
+        down1 = setup("/items/kitchen_utensils/frying_pan");
+        
     }
 
     @Override
@@ -39,6 +43,12 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
     @Override
     public List<Preparable> getContents(){
         return contents;
+    }
+
+    @Override
+    public Preparable getFirstIngredient(){
+        if(contents.isEmpty()) return null;
+        return contents.get(0);
     }
 
 

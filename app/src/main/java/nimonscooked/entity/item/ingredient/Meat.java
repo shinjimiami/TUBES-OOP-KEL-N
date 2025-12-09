@@ -1,10 +1,13 @@
 package nimonscooked.entity.item.ingredient;
 
+import nimonscooked.main.GamePanel;
 import nimonscooked.enums.IngredientState;
 
 public class Meat extends Ingredient{
-    public Meat(String id, int x, int y, IngredientState currentState) {
-        super(id, "Meat", x, y, currentState);
+    public Meat(GamePanel gp, IngredientState currentState) {
+        super(gp, currentState, nimonscooked.enums.IngredientType.MEAT);
+        name = "Meat";
+        registerStateImages("/items/ingredients/meat");
     }
 
     @Override

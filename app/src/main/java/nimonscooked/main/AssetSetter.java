@@ -8,7 +8,7 @@ public class AssetSetter {
     }
 
     public void setObject() {
-        // gp.obj[] = new 
+        // atur
     }
 
 }

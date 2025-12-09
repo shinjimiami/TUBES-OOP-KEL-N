@@ -1,18 +1,22 @@
 
 package nimonscooked.entity.station;
 
+import nimonscooked.main.GamePanel;
 import nimonscooked.entity.item.Item;
 import nimonscooked.entity.Chef;
 import nimonscooked.entity.Entity;
+import nimonscooked.enums.EntityType;
 
 public abstract class Station extends Entity {
     private boolean isOccupied;
     protected Item containedItem;
 
-    public Station(String id, String name, int x, int y) {
-        super(id, name, x, y);
+    public Station(GamePanel gp) {
+        super(gp);
         this.isOccupied = false;
         this.containedItem = null;
+        type = EntityType.INTERACTIVE_OBJECT;
+        collision = true;
     }
 
     abstract void interact(Chef player);
