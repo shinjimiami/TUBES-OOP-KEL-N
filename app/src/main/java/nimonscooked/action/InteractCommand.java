@@ -35,7 +35,6 @@ public class InteractCommand implements Command {
         Station targetStation = map.getStationAt(targetX, targetY);
 
         if (targetStation != null) {
-            // Panggil logika interaksi spesifik milik station tersebut
             System.out.println(chef.getName() + " interacting with " + targetStation.name);
             targetStation.interact(chef);
         } else {

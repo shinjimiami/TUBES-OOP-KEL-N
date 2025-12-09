@@ -17,11 +17,9 @@ public class PickUpDropCommand implements Command {
 
     @Override
     public void execute(Chef chef) {
-        // Jangan lakukan aksi jika Chef sedang sibuk (misal: memotong)
         if (chef.getCurrentAction() == ChefStatus.BUSY)
             return;
 
-        // 1. Hitung koordinat di depan Chef
         int targetX = chef.getPosition().getX();
         int targetY = chef.getPosition().getY();
 
@@ -32,14 +30,12 @@ public class PickUpDropCommand implements Command {
             case RIGHT -> targetX++;
         }
 
-        // 2. Cek Validasi Koordinat Map
         if (targetX < 0 || targetX >= map.getCols() || targetY < 0 || targetY >= map.getRows()) {
             return;
         }
 
         char tileType = map.getGrid()[targetY][targetX];
 
-        // 3. Logika TRASH STATION ('T') - Membuang Item
         if (tileType == 'T') {
             if (chef.getInventory() != null) {
                 System.out.println("Item dibuang ke Trash: " + chef.getInventory().getName());
@@ -50,7 +46,6 @@ public class PickUpDropCommand implements Command {
             return;
         }
 
-        // 4. Logika INGREDIENT STORAGE ('I') - Mengambil Bahan Mentah
         if (tileType == 'I') {
             if (chef.getInventory() == null) {
                 Item newItem = getIngredientFromStorage(targetX, targetY);
@@ -64,21 +59,13 @@ public class PickUpDropCommand implements Command {
             return;
         }
 
-        // 5. Placeholder untuk Station Lain (Counter/Cutting/Cooking)
-        // Nanti kita akan tambahkan logika interaksi dengan objek Station di sini
-        // setelah logic StationManager tersedia.
         System.out.println("Berinteraksi dengan tile: " + tileType + " di (" + targetX + "," + targetY + ")");
     }
 
-    // Helper untuk menentukan bahan apa yang keluar berdasarkan posisi Storage (Map
-    // C)
     private Item getIngredientFromStorage(int x, int y) {
-        // ID ingredient dibuat unik menggunakan timestamp/random sederhana untuk
-        // sementara
+
         String uniqueId = "ING-" + System.currentTimeMillis();
 
-        // Mapping Posisi untuk MAP TYPE C (Burger)
-        // Baris 0, Kolom 7 -> Bun
         if (y == 0 && x == 7)
             return new Bun(uniqueId, x, y, IngredientState.RAW);
 
@@ -98,7 +85,6 @@ public class PickUpDropCommand implements Command {
         if (y == 8 && x == 7)
             return new Cheese(uniqueId, x, y, IngredientState.RAW);
 
-        // Default fallback (jika ada storage lain)
         return new Bun(uniqueId, x, y, IngredientState.RAW);
     }
 }

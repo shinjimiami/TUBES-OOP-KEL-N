@@ -12,9 +12,7 @@ public class SwitchChefCommand implements Command {
 
     @Override
     public void execute(Chef activeChef) {
-        // Switch Chef boleh dilakukan kapan saja (termasuk saat BUSY)
-        // Chef yang lama akan tetap melanjutkan status BUSY-nya (di-handle oleh
-        // Chef.update)
+
         System.out.println("Switching active chef...");
         gamePanel.switchChef();
     }
