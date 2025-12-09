@@ -1,75 +1,84 @@
 package nimonscooked.entity.station;
 
-import nimonscooked.entity.station.ChefPlayer;
-import nimonscooked.entity.station.Station;
+import nimonscooked.entity.Chef;
+import nimonscooked.entity.item.Item;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.enums.IngredientState;
-import javax.swing.Timer;
+import nimonscooked.main.GamePanel;
+import nimonscooked.entity.item.kitchenutensil.Plate;
 
-
-// berfungsi untuk memotong ingredient yang dapat dipotong
-// hanya akan bergerak apabila chefPlayer berada di sebelah cutting station
 public class CuttingStation extends Station {
-    private final int cuttingDuration = 15000; //15 detik
-    private final int interval = 1000; //buat UI nya nanti
-    private Timer cuttingTimer;
-    private int cuttingStartTime = 0;
-    private int savedTime = 0;
 
-    public CuttingStation(String id, float x, float y) {
-        super(id, "Cutting Station", x, y);
+    private final int CuttingDuration = 3000;
+    private int savedTime = 0; 
+
+    public CuttingStation(GamePanel gp) {
+        super(gp); 
+        this.name = "Cutting Station";
+
+        down1 = setup("/stations/cutting_station");
+        int tilesWide = 1;
+        int tilesHigh = 1;
+        this.imageWidth = gp.tileSize * tilesWide;
+        this.imageHeight = gp.tileSize * tilesHigh;
+        solidArea.x = 0;
+        solidArea.y = 0;
+        solidArea.width = this.imageWidth;
+        solidArea.height = this.imageHeight;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
     }
 
+    public boolean processCut(int timeNeeded) {
+        if (!(containedItem instanceof Preparable)) {
+            return false;
+        }
+
+        Preparable item = (Preparable) containedItem;
+        
+        if (item.getState() != IngredientState.RAW) {
+            this.savedTime = 0; 
+            return false; 
+        }
+
+        this.savedTime += timeNeeded;
+
+        if (this.savedTime >= CuttingDuration) {
+            item.chop(); 
+            this.savedTime = 0; 
+            System.out.println("[CUTTING] " + item.getName() + " has been CHOPPED!");
+            return true;
+        }
+
+        return false;
+    }
+    
     @Override
-    public void interact(ChefPlayer player) {
-        // cek apakah ada item di cutting station
-        if(this.containedItem == null){
-            if(player.getHeldItem() != null){ //menunggu update dari chefPlayer, ini berfungsi untuk ngecek apakah player pegang item atau nggak
-                super.placeItem(player.takeItem()); //item ditaro di cutting station
-                this.savedTime = 0;
-            }
-        }
-
-        // lanjut apabila ada item di cutting station
-        // cek apakah item bisa dipotong
-        if(!(containedItem instanceof Preparable)){
-            System.out.println("Item tidak bisa dipotong");
+    public void interact(Chef player) {
+        Item heldItem = player.getHeldItem();
+        
+        if (this.containedItem == null && heldItem != null) {
+            super.placeItem(player.takeItem());
+            this.savedTime = 0; 
             return;
         }
-
-        Preparable preparableItem = (Preparable) containedItem;
-        if(!preparableItem.canBeChopped()){
-            System.out.println("Item tidak bisa dipotong");
+        
+        if (this.containedItem instanceof Plate && heldItem instanceof Preparable) {
+            Plate plate = (Plate) this.containedItem;
+            Preparable ingredient = (Preparable) heldItem;
+            
+            // Asumsi Plate memiliki addComponent
+            // if (plate.addComponent(ingredient)) { 
+            //     player.takeItem();
+            // }
             return;
         }
-        // potong item
-        preparableItem.chop();
-        startCuttingTimer(preparableItem);
-        System.out.println("Item berhasil dipotong");
-        return;
-    }
-
-    // implementasi pemotongan dengan timer
-    private void startCuttingTimer(Preparable item) {
-        stopCuttingTimer();
-
-        cuttingTimer = new Timer(cuttingDuration, e -> {
-            item.chop();
-            cuttingTimer.stop();
-        });
-
-        cuttingTimer.setRepeats(false);
-        cuttingTimer.start();
-    }
-
-    private void stopCuttingTimer() {
-        if (cuttingTimer != null && cuttingTimer.isRunning()) {
-            cuttingTimer.stop();
+        
+        if (this.containedItem != null && heldItem == null) {
+            player.setHeldItem(super.takeItem());
         }
     }
 
-    private void finishCutting(Preparable item) {
-        item.chop();
-        // harusnya nanti UI diupdate disini
-    }
+    public int getSavedTime() { return savedTime; }
+    public int getCuttingDurationMs() { return CuttingDuration; }
 }

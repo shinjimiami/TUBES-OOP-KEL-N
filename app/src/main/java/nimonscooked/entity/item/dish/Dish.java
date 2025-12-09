@@ -2,13 +2,17 @@ package nimonscooked.entity.item.dish;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import nimonscooked.main.GamePanel;
+import nimonscooked.entity.item.Item;
 import nimonscooked.enums.IngredientState;
 import nimonscooked.interfaces.Preparable;
 
-public class Dish{
+public class Dish extends Item {
     private final List<Preparable> components;
 
-    public Dish() {
+    public Dish(GamePanel gp) {
+        super(gp);
         this.components = new ArrayList<>();
     }
 

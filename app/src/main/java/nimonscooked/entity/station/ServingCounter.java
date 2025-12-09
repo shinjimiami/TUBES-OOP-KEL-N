@@ -1,57 +1,106 @@
 package nimonscooked.entity.station;
 
+import nimonscooked.main.GamePanel;
+import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.Item;
 import nimonscooked.entity.item.kitchenutensil.Plate;
-import nimonscooked.main.OrderManager;
+import nimonscooked.entity.item.dish.Dish;
+import nimoncooked.object.OrderManager;
+
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 public class ServingCounter extends Station {
+    private final int ServingReturnTime = 10000;
+    private final List<PlateReturnTimer> returnQueue = new LinkedList<>();
 
-    public ServingCounter(String id, float x, float y) {
-        super(id, "Serving Counter", x, y);
+    private final PlateStorage plateStorage;
+
+    public ServingCounter(GamePanel gp, PlateStorage ps) {
+        super(gp);
+        this.name = "Serving Counter";
+        this.plateStorage = ps;
+
+        down1 = setup("/stations/serving_counter");
+        int tilesWide = 1;
+        int tilesHigh = 2;
+        this.imageWidth = gp.tileSize * tilesWide;
+        this.imageHeight = gp.tileSize * tilesHigh;
+        solidArea.x = 0;
+        solidArea.y = 0;
+        solidArea.width = this.imageWidth;
+        solidArea.height = this.imageHeight;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+    }
+
+    private static class PlateReturnTimer{
+        final Plate plate;
+        int remainingTime;
+
+        public PlateReturnTimer(Plate p, int time){
+            this.plate = p;
+            this.remainingTime = time;
+        }
+    }
+
+    // ini dipake buat di gamepanel, biar ada tracker waktu untuk servingTime
+    public void updateDirtyPlate(int timePassed){
+        if(returnQueue.isEmpty()) return;
+
+        Iterator<PlateReturnTimer> iterator = returnQueue.iterator();
+        while(iterator.hasNext()){
+            PlateReturnTimer timer = iterator.next();
+            timer.remainingTime -= timePassed;
+
+            if(timer.remainingTime <= 0){
+                System.out.println("[SERVING] Returning plate");
+                plateStorage.receiveDirtyPlate(timer.plate);
+                iterator.remove();
+            }
+        }
     }
     
-    private OrderManager orderManager;
+	@Override
+	public void interact(Chef player) {
+		Item heldItem = player.getHeldItem();
 
-    public ServingCounter() {
-        super();
-        // ID & Nama bisa diset via constructor super atau setter jika ada
-    }
+        if(heldItem != null){
+            // yang bisa diserve adalah plate
+            if(heldItem instanceof Plate){
+                Plate servedPlate = (Plate) player.takeItem();
+                Dish servedDish = servedPlate.getContainedDish();
 
-    // PENTING: Panggil ini di GamePanel/SetupGame setelah membuat objeknya
-    public void setOrderManager(OrderManager om) {
-        this.orderManager = om;
-    }
+                if (servedDish!=null){
+                    boolean success = OrderManager.getInstance().submitOrder(servedDish);
 
-    @Override
-    public void interactionType() {
-        // Biasanya ServingCounter bereaksi terhadap aksi DROP, bukan Interact biasa.
-        // Tapi jika desain Anda menggunakan tombol Interact untuk menyajikan,
-        // Anda butuh referensi ke Chef/Player di parameter method ini.
-        // Karena signature method abstract-nya void interactionType(), 
-        // kita asumsikan validasi dipanggil dari luar (misal dari logic Player).
-    }
+                    if(success){
+                        System.out.println("[SERVING] the dish has been served.");
+                        // keluarin sfx RIGHT
 
-    // Method helper untuk dipanggil saat Player melakukan "Drop Item" di station ini
-    public boolean servePlate(Item item) {
-        if (orderManager == null) {
-            System.err.println("FATAL: OrderManager belum diset di ServingCounter!");
-            return false;
-        }
+                    } else{
+                        System.out.println("[SERVING] the dish is incorrect");
+                        // keluarin sfx WRONG
+                    }
 
-        if (item instanceof Plate) {
-            Plate plate = (Plate) item;
-            
-            // Validasi isi piring
-            boolean success = orderManager.validateDish(plate.getContents());
-            
-            // Bersihkan piring setelah disajikan (baik sukses atau gagal)
-            // Sesuai spec: piring jadi kotor dan kembali ke storage (logic return to storage dihandle terpisah)
-            plate.clearContents(); 
-            
-            return success;
-        }
-        
-        System.out.println("Hanya bisa menyajikan Plate!");
-        return false;
-    }
+                    servedPlate.setDirty(true);
+                    servedPlate.clearDish();
+
+                    returnQueue.add(new PlateReturnTimer(servedPlate, ServingReturnTime));
+                    System.out.println("[SERVING] Plate is being served");
+                    return;
+                } else{
+                    System.out.println("[SERVING] Plate is empty");
+                    // keluarin sfx WRONG
+                    return;
+                }
+            }
+            // kalo bukan plate, langsung ga diterima
+            System.out.println("[SERVING] Can't serve other than plate");
+            // keluarin sfx WRONG
+            return;                
+        } else{return; }
+	}    
+
 }
