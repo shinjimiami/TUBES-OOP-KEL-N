@@ -55,9 +55,9 @@ public class CookingStation extends Station {
                 System.out.println("[COOKING INTERACT] Stopped cooking because item was taken");
             }
             player.setInventory(super.takeItem());
-            System.out.println("[COOKING INTERACT] ✓ Took FryingPan from station");
+            System.out.println("[COOKING INTERACT] Took FryingPan from station");
         } else {
-            System.out.println("[COOKING INTERACT] ✗ Cannot interact - conditions not met");
+            System.out.println("[COOKING INTERACT] Cannot interact - conditions not met");
         }
     }
 
@@ -95,7 +95,6 @@ public class CookingStation extends Station {
             }
         } else if (elapsedTime >= cookingDuration) {
             // Cooked state - cook() pertama kali dari CHOPPED atau COOKING
-            // ✅ FIX: Accept both CHOPPED and COOKING states
             if (currentItemState == IngredientState.CHOPPED || currentItemState == IngredientState.COOKING) {
                 item.cook(); // CHOPPED/COOKING -> COOKED
                 System.out.println("[COOKING] Item COOKED - ready to serve!");
@@ -118,36 +117,41 @@ public class CookingStation extends Station {
     }
 
     public void startCooking(long currentTime) {
-        if (getContainedItem() == null) {
-            System.out.println("[COOKING] DEBUG: No item in cooking station");
+        if(this.isCooking){
+            System.out.println("[COOKING] Process already running");
             return;
         }
 
-        if (!(getContainedItem() instanceof CookingDevice)) {
-            System.out.println(
-                    "[COOKING] DEBUG: Item is not a cooking device: " + getContainedItem().getClass().getSimpleName());
+        if (getContainedItem() == null || !(getContainedItem() instanceof CookingDevice)) {
+            System.out.println("[COOKING] Invalid item");
             return;
         }
+
 
         CookingDevice device = (CookingDevice) getContainedItem();
         Preparable item = device.getFirstIngredient();
 
         if (item == null) {
-            System.out.println("[COOKING] DEBUG: Cooking device is empty");
+            System.out.println("[COOKING] Cooking device is empty");
+            return;
+        }
+
+        if(!item.canBeCooked()){
+            System.out.println("[COOKING] Item cannot be cooked");
             return;
         }
 
         // Hanya bisa mulai cooking jika item dalam state RAW atau CHOPPED
         IngredientState itemState = item.getState();
-        System.out.println("[COOKING] DEBUG: Item state = " + itemState + ", Name = " + item.getName());
+        System.out.println("[COOKING] Item state = " + itemState + ", Name = " + item.getName());
 
         if (itemState == IngredientState.RAW || itemState == IngredientState.CHOPPED) {
             this.isCooking = true;
             this.cookingStartTime = currentTime;
             device.startCooking();
-            System.out.println("[COOKING] ✓ Started cooking " + item.getName() + " (state: " + itemState + ")");
+            System.out.println("[COOKING]  Started cooking " + item.getName() + " (state: " + itemState + ")");
         } else {
-            System.out.println("[COOKING] ✗ Cannot cook - wrong state: " + itemState);
+            System.out.println("[COOKING]  Cannot cook - wrong state: " + itemState);
         }
     }
 
