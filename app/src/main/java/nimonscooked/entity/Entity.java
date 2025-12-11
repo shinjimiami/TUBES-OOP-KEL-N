@@ -79,11 +79,12 @@ public abstract class Entity {
 
     public void checkCollisionAndMove() {
         collisionON = false;
-        // TODO: Add collision checker to GamePanel
-        // if (gp != null && gp.collisionChecker != null) {
-        // gp.collisionChecker.checkTile(this);
-        // gp.collisionChecker.chef(this);
-        // }
+        // Use CollisionChecker from GamePanel if available
+        if (gp != null && gp.getCollisionChecker() != null) {
+            gp.getCollisionChecker().checkTile(this);
+            gp.getCollisionChecker().chef(this);
+            collisionON = this.collision;
+        }
     }
 
     public void updateSprite() {
