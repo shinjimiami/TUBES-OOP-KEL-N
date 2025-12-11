@@ -616,117 +616,114 @@ public class UI {
 	}
 
 	public void drawMainMenu(Graphics2D g2) {
-		if (gp.menuBackground != null) {
-			g2.drawImage(gp.menuBackground, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		// if (gp.menuBackground != null) {
+        final Color PRIM_COLOR = new Color(121,51,51);
+        final Color FILL_COLOR = new Color(251, 237, 198, 220);
+        final int TEXT_PADDING = 12;
 
-			int buttonWidth = 385;
-			int buttonHeight = 70;
-			int buttonX = (gp.screenWidth - buttonWidth) / 2;
+        g2.drawImage(gp.menuBackground,0,0,gp.screenWidth, gp.screenHeight, null);
 
-			int startY = 382;
-			int howToPlayY = 486;
-			int exitY = 588;
+        int buttonWidth = 150;
+        int buttonHeight = 45;
+        int gapY = 15;
+        int buttonX = 45;
 
-			g2.setFont(new Font("Monospaced", Font.BOLD, 42));
-			FontMetrics fm = g2.getFontMetrics();
+        int totalMenuHeight = (4*buttonHeight) + (3*gapY);
+        int currentY = 240;
 
-			boolean startSelected = gp.selectedMenuIndex == 0;
-			g2.setColor(startSelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
-			g2.fillRoundRect(buttonX, startY - 10, buttonWidth, buttonHeight, 15, 15);
-			g2.setColor(startSelected ? new Color(255, 255, 0, 200) : new Color(255, 255, 100, 150));
-			g2.setStroke(new BasicStroke(startSelected ? 4 : 2));
-			g2.drawRoundRect(buttonX, startY - 10, buttonWidth, buttonHeight, 15, 15);
+        g2.setFont(new Font("daydream", Font.PLAIN, 18));
+        FontMetrics fm = g2.getFontMetrics();
 
-			boolean howToPlaySelected = gp.selectedMenuIndex == 1;
-			g2.setColor(howToPlaySelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
-			g2.fillRoundRect(buttonX, howToPlayY - 10, buttonWidth, buttonHeight, 15, 15);
-			g2.setColor(howToPlaySelected ? new Color(0, 255, 255, 200) : new Color(100, 255, 255, 150));
-			g2.setStroke(new BasicStroke(howToPlaySelected ? 4 : 2));
-			g2.drawRoundRect(buttonX, howToPlayY - 10, buttonWidth, buttonHeight, 15, 15);
+        String[] texts = {"START", "CONTROL", "CREDIT", "EXIT"};
 
-			boolean exitSelected = gp.selectedMenuIndex == 2;
-			g2.setColor(exitSelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
-			g2.fillRoundRect(buttonX, exitY - 10, buttonWidth, buttonHeight, 15, 15);
-			g2.setColor(exitSelected ? new Color(255, 0, 100, 200) : new Color(255, 100, 150, 150));
-			g2.setStroke(new BasicStroke(exitSelected ? 4 : 2));
-			g2.drawRoundRect(buttonX, exitY - 10, buttonWidth, buttonHeight, 15, 15);
+        for(int i = 0; i<texts.length; i++){
+            boolean selected = gp.selectedMenuIndex == i;
+            String text = texts[i];
+            int rectY = currentY;
+            
+            g2.setColor(FILL_COLOR);
+            g2.fillRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15,15);
 
-			g2.setColor(startSelected ? new Color(255, 255, 0) : new Color(255, 255, 255));
-			String startText = "START GAME";
-			int startTextWidth = fm.stringWidth(startText);
-			g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 45);
+            g2.setColor(PRIM_COLOR);
+            g2.setStroke(new BasicStroke(selected ? 6:3));
+            g2.drawRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15,15);
+            g2.setColor(PRIM_COLOR);
 
-			g2.setColor(howToPlaySelected ? new Color(0, 255, 255) : new Color(255, 255, 255));
-			String howToPlayText = "HOW TO PLAY";
-			int howToPlayTextWidth = fm.stringWidth(howToPlayText);
-			g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 45);
+            int textX = buttonX + TEXT_PADDING;
+            int textY = currentY+30;
 
-			g2.setColor(exitSelected ? new Color(255, 100, 100) : new Color(255, 255, 255));
-			String exitText = "EXIT";
-			int exitTextWidth = fm.stringWidth(exitText);
-			g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 45);
+            g2.drawString(text, textX, textY);
 
-		} else {
-			g2.setColor(new Color(255, 228, 196));
-			g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+            if(selected){
+                g2.fillPolygon(new int[]{buttonX-20, buttonX-10, buttonX-20},
+                               new int[]{textY-10, textY, textY+10}, 3
+                );
+            }
+            currentY += buttonHeight + gapY;
+        }
 
-			g2.setFont(new Font("Monospaced", Font.BOLD, 80));
-			g2.setColor(new Color(255, 100, 50));
-			String title = "NIMONSCOOKED";
-			int titleWidth = g2.getFontMetrics().stringWidth(title);
-			g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 150);
 
-			g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
-			g2.setColor(new Color(100, 100, 100));
-			String subtitle = "Kelompok N - OOP Project";
-			int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
-			g2.drawString(subtitle, (gp.screenWidth - subtitleWidth) / 2, 190);
+		// } else {
+		// 	g2.setColor(new Color(255, 228, 196));
+		// 	g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
-			int buttonWidth = 300;
-			int buttonHeight = 60;
-			int buttonX = (gp.screenWidth - buttonWidth) / 2;
-			int startY = 280;
-			int spacing = 80;
+		// 	g2.setFont(new Font("Monospaced", Font.BOLD, 80));
+		// 	g2.setColor(new Color(255, 100, 50));
+		// 	String title = "NIMONSCOOKED";
+		// 	int titleWidth = g2.getFontMetrics().stringWidth(title);
+		// 	g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 150);
 
-			boolean startSelected = gp.selectedMenuIndex == 0;
-			g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
-			g2.fillRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
-			g2.setColor(Color.WHITE);
-			g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
-			g2.drawRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
-			g2.setFont(new Font("Arial", Font.BOLD, 32));
-			String startText = "Start Game";
-			int startTextWidth = g2.getFontMetrics().stringWidth(startText);
-			g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 40);
+		// 	g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
+		// 	g2.setColor(new Color(100, 100, 100));
+		// 	String subtitle = "Kelompok N - OOP Project";
+		// 	int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
+		// 	g2.drawString(subtitle, (gp.screenWidth - subtitleWidth) / 2, 190);
 
-			int howToPlayY = startY + spacing;
-			boolean howToPlaySelected = gp.selectedMenuIndex == 1;
-			g2.setColor(howToPlaySelected ? new Color(50, 164, 255) : new Color(30, 144, 255));
-			g2.fillRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
-			g2.setColor(Color.WHITE);
-			g2.setStroke(new BasicStroke(howToPlaySelected ? 5 : 3));
-			g2.drawRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
-			String howToPlayText = "How to Play";
-			int howToPlayTextWidth = g2.getFontMetrics().stringWidth(howToPlayText);
-			g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 40);
+		// 	int buttonWidth = 300;
+		// 	int buttonHeight = 60;
+		// 	int buttonX = (gp.screenWidth - buttonWidth) / 2;
+		// 	int startY = 280;
+		// 	int spacing = 80;
 
-			int exitY = howToPlayY + spacing;
-			boolean exitSelected = gp.selectedMenuIndex == 2;
-			g2.setColor(exitSelected ? new Color(240, 40, 80) : new Color(220, 20, 60));
-			g2.fillRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
-			g2.setColor(Color.WHITE);
-			g2.setStroke(new BasicStroke(exitSelected ? 5 : 3));
-			g2.drawRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
-			String exitText = "Exit";
-			int exitTextWidth = g2.getFontMetrics().stringWidth(exitText);
-			g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 40);
-		}
+		// 	boolean startSelected = gp.selectedMenuIndex == 0;
+		// 	g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
+		// 	g2.fillRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
+		// 	g2.setColor(Color.WHITE);
+		// 	g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
+		// 	g2.drawRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
+		// 	g2.setFont(new Font("Arial", Font.BOLD, 32));
+		// 	String startText = "Start Game";
+		// 	int startTextWidth = g2.getFontMetrics().stringWidth(startText);
+		// 	g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 40);
 
-		g2.setColor(Color.WHITE);
-		g2.setFont(new Font("Arial", Font.PLAIN, 18));
-		String hint = "Use W/S or Arrow Keys to navigate | ENTER/SPACE to select";
-		int hintWidth = g2.getFontMetrics().stringWidth(hint);
-		g2.drawString(hint, (gp.screenWidth - hintWidth) / 2, gp.screenHeight - 30);
+		// 	int howToPlayY = startY + spacing;
+		// 	boolean howToPlaySelected = gp.selectedMenuIndex == 1;
+		// 	g2.setColor(howToPlaySelected ? new Color(50, 164, 255) : new Color(30, 144, 255));
+		// 	g2.fillRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
+		// 	g2.setColor(Color.WHITE);
+		// 	g2.setStroke(new BasicStroke(howToPlaySelected ? 5 : 3));
+		// 	g2.drawRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
+		// 	String howToPlayText = "How to Play";
+		// 	int howToPlayTextWidth = g2.getFontMetrics().stringWidth(howToPlayText);
+		// 	g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 40);
+
+		// 	int exitY = howToPlayY + spacing;
+		// 	boolean exitSelected = gp.selectedMenuIndex == 2;
+		// 	g2.setColor(exitSelected ? new Color(240, 40, 80) : new Color(220, 20, 60));
+		// 	g2.fillRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
+		// 	g2.setColor(Color.WHITE);
+		// 	g2.setStroke(new BasicStroke(exitSelected ? 5 : 3));
+		// 	g2.drawRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
+		// 	String exitText = "Exit";
+		// 	int exitTextWidth = g2.getFontMetrics().stringWidth(exitText);
+		// 	g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 40);
+		// }
+
+		// g2.setColor(Color.WHITE);
+		// g2.setFont(new Font("Arial", Font.PLAIN, 18));
+		// String hint = "Use W/S or Arrow Keys to navigate | ENTER/SPACE to select";
+		// int hintWidth = g2.getFontMetrics().stringWidth(hint);
+		// g2.drawString(hint, (gp.screenWidth - hintWidth) / 2, gp.screenHeight - 30);
 	}
 
 	public void drawHowToPlay(Graphics2D g2) {
