@@ -38,6 +38,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     BufferedImage[] chef1Sprites = new BufferedImage[8];
     BufferedImage[] chef2Sprites = new BufferedImage[8];
     BufferedImage menuBackground;
+    BufferedImage winScreenBackground;
+    BufferedImage loseScreenBackground;
+    BufferedImage mapBackground; // Background image for the map
 
     // Warna Pastel Lantai
     Color pastelOrange = new Color(255, 223, 186);
@@ -67,17 +70,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private final int WIN_COMPLETED_ORDERS = 2; // Win after 2 completed orders
     private final int LOSE_SCORE = -10; // Lose condition
 
-    // Menu buttons
-    private Rectangle startButton;
-    private Rectangle howToPlayButton;
-    private Rectangle exitButton;
-    private Rectangle backButton;
-    private Rectangle selectStageButton;
-    private Rectangle tryAgainButton;
-
-    // Button hover/press state
-    private Rectangle hoveredButton = null;
-    private Rectangle pressedButton = null;
+    // Menu navigation
+    private int selectedMenuIndex = 0; // 0=Start, 1=How to Play, 2=Exit
+    private int maxMenuIndex = 2;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -85,109 +80,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         this.setDoubleBuffered(true);
         this.addKeyListener(this);
         this.setFocusable(true);
-
-        // Add mouse listener for all button clicks
-        this.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent e) {
-                Point clickPoint = e.getPoint();
-                // Track pressed button for visual feedback
-                if (startButton != null && startButton.contains(clickPoint)) {
-                    pressedButton = startButton;
-                } else if (howToPlayButton != null && howToPlayButton.contains(clickPoint)) {
-                    pressedButton = howToPlayButton;
-                } else if (exitButton != null && exitButton.contains(clickPoint)) {
-                    pressedButton = exitButton;
-                } else if (backButton != null && backButton.contains(clickPoint)) {
-                    pressedButton = backButton;
-                } else if (selectStageButton != null && selectStageButton.contains(clickPoint)) {
-                    pressedButton = selectStageButton;
-                } else if (tryAgainButton != null && tryAgainButton.contains(clickPoint)) {
-                    pressedButton = tryAgainButton;
-                }
-                repaint();
-            }
-
-            @Override
-            public void mouseReleased(java.awt.event.MouseEvent e) {
-                pressedButton = null;
-                repaint();
-            }
-
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                Point clickPoint = e.getPoint();
-
-                switch (gameState) {
-                    case MENU:
-                        if (startButton != null && startButton.contains(clickPoint)) {
-                            gameState = GameState.STAGE_SELECT;
-                        } else if (howToPlayButton != null && howToPlayButton.contains(clickPoint)) {
-                            gameState = GameState.HOW_TO_PLAY;
-                        } else if (exitButton != null && exitButton.contains(clickPoint)) {
-                            System.exit(0);
-                        }
-                        break;
-
-                    case HOW_TO_PLAY:
-                        if (backButton != null && backButton.contains(clickPoint)) {
-                            gameState = GameState.MENU;
-                        }
-                        break;
-
-                    case STAGE_SELECT:
-                        if (selectStageButton != null && selectStageButton.contains(clickPoint)) {
-                            startGame();
-                        } else if (backButton != null && backButton.contains(clickPoint)) {
-                            gameState = GameState.MENU;
-                        }
-                        break;
-
-                    case WIN:
-                    case LOSE:
-                        if (tryAgainButton != null && tryAgainButton.contains(clickPoint)) {
-                            restartGame();
-                        } else if (backButton != null && backButton.contains(clickPoint)) {
-                            gameState = GameState.MENU;
-                            resetGame();
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        });
-
-        // Add mouse motion listener for hover effects
-        this.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(java.awt.event.MouseEvent e) {
-                Point mousePoint = e.getPoint();
-                Rectangle oldHovered = hoveredButton;
-                hoveredButton = null;
-
-                // Check which button is hovered
-                if (startButton != null && startButton.contains(mousePoint)) {
-                    hoveredButton = startButton;
-                } else if (howToPlayButton != null && howToPlayButton.contains(mousePoint)) {
-                    hoveredButton = howToPlayButton;
-                } else if (exitButton != null && exitButton.contains(mousePoint)) {
-                    hoveredButton = exitButton;
-                } else if (backButton != null && backButton.contains(mousePoint)) {
-                    hoveredButton = backButton;
-                } else if (selectStageButton != null && selectStageButton.contains(mousePoint)) {
-                    hoveredButton = selectStageButton;
-                } else if (tryAgainButton != null && tryAgainButton.contains(mousePoint)) {
-                    hoveredButton = tryAgainButton;
-                }
-
-                // Repaint only if hover state changed
-                if (oldHovered != hoveredButton) {
-                    repaint();
-                }
-            }
-        });
 
         chefs.add(new Chef("C1", "Kirby", 6, 2));
         chefs.add(new Chef("C2", "Waddle Dee", 8, 5));
@@ -204,6 +96,29 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 System.out.println("[MENU] Menu background loaded successfully!");
             } else {
                 System.out.println("[MENU] Failed to load menu background!");
+            }
+
+            // Load win/lose screens
+            winScreenBackground = load("/menu/win_screen.png");
+            if (winScreenBackground != null) {
+                System.out.println("[MENU] Win screen background loaded successfully!");
+            } else {
+                System.out.println("[MENU] Failed to load win screen background!");
+            }
+
+            loseScreenBackground = load("/menu/lose_screen.png");
+            if (loseScreenBackground != null) {
+                System.out.println("[MENU] Lose screen background loaded successfully!");
+            } else {
+                System.out.println("[MENU] Failed to load lose screen background!");
+            }
+
+            // Load map background
+            mapBackground = load("/maps/map_d.png");
+            if (mapBackground != null) {
+                System.out.println("[MAP] Map background loaded successfully!");
+            } else {
+                System.out.println("[MAP] Failed to load map background!");
             }
 
             String p1 = "/chef/KIRBY_";
@@ -284,6 +199,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         // Quick restart - stay in game
         resetGame();
         gameState = GameState.PLAYING;
+        selectedMenuIndex = 0;
         System.out.println("[GAME] Restarting game...");
     }
 
@@ -411,33 +327,47 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, screenWidth, topMargin);
 
-        // Draw Map (offset by topMargin)
-        char[][] grid = gameMap.getGrid();
+        // Draw Map Background Image if available
+        if (mapBackground != null) {
+            // Draw the background image scaled to map area
+            g2.drawImage(mapBackground, 0, topMargin, mapWidth, mapHeight, null);
+        } else {
+            // Fallback: Draw tile-based map
+            char[][] grid = gameMap.getGrid();
+            for (int row = 0; row < gameMap.getRows(); row++) {
+                for (int col = 0; col < gameMap.getCols(); col++) {
+                    int x = col * tileSize;
+                    int y = row * tileSize + topMargin;
+                    char tile = grid[row][col];
+
+                    if (tile == 'X') {
+                        g2.setColor(Color.DARK_GRAY);
+                        g2.fillRect(x, y, tileSize, tileSize);
+                    } else if (tile == '.' || tile == 'V') {
+                        if ((row + col) % 2 == 0)
+                            g2.setColor(pastelOrange);
+                        else
+                            g2.setColor(pastelYellow);
+                        g2.fillRect(x, y, tileSize, tileSize);
+                    } else {
+                        g2.setColor(new Color(100, 150, 255));
+                        g2.fillRect(x, y, tileSize, tileSize);
+                    }
+
+                    if (tile != 'X' && tile != '.' && tile != 'V') {
+                        g2.setColor(Color.BLACK);
+                        g2.drawRect(x, y, tileSize, tileSize);
+                        g2.drawString(String.valueOf(tile), x + 20, y + 30);
+                    }
+                }
+            }
+        }
+
+        // Draw station markers and progress bars (offset by topMargin)
         for (int row = 0; row < gameMap.getRows(); row++) {
             for (int col = 0; col < gameMap.getCols(); col++) {
                 int x = col * tileSize;
                 int y = row * tileSize + topMargin; // Offset map down
-                char tile = grid[row][col];
-
-                if (tile == 'X') {
-                    g2.setColor(Color.DARK_GRAY);
-                    g2.fillRect(x, y, tileSize, tileSize);
-                } else if (tile == '.' || tile == 'V') {
-                    if ((row + col) % 2 == 0)
-                        g2.setColor(pastelOrange);
-                    else
-                        g2.setColor(pastelYellow);
-                    g2.fillRect(x, y, tileSize, tileSize);
-                } else {
-                    g2.setColor(new Color(100, 150, 255));
-                    g2.fillRect(x, y, tileSize, tileSize);
-                }
-
-                if (tile != 'X' && tile != '.' && tile != 'V') {
-                    g2.setColor(Color.BLACK);
-                    g2.drawRect(x, y, tileSize, tileSize);
-                    g2.drawString(String.valueOf(tile), x + 20, y + 30);
-                }
 
                 // Draw progress bars for stations
                 nimonscooked.entity.station.Station station = gameMap.getStationAt(col, row);
@@ -450,10 +380,24 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     }
                 } else if (station instanceof nimonscooked.entity.station.CookingStation) {
                     nimonscooked.entity.station.CookingStation cookingStation = (nimonscooked.entity.station.CookingStation) station;
-                    if (cookingStation.getContainedItem() != null && cookingStation.isCooking()) {
-                        float progress = cookingStation.getCookingProgress();
-                        Color barColor = progress < 0.8f ? new Color(255, 165, 0) : new Color(255, 69, 0);
-                        drawProgressBar(g2, x, y, (int) (progress * 100), 100, barColor);
+
+                    // Draw frying pan if there's an item on cooking station
+                    if (cookingStation.getContainedItem() != null) {
+                        BufferedImage panSprite = cookingStation.getContainedItem().getSprite();
+                        if (panSprite != null) {
+                            // Draw frying pan centered on the cooking station
+                            int panSize = (int) (tileSize * 0.8); // 80% of tile size
+                            int panX = x + (tileSize - panSize) / 2;
+                            int panY = y + (tileSize - panSize) / 2;
+                            g2.drawImage(panSprite, panX, panY, panSize, panSize, null);
+                        }
+
+                        // Draw progress bar if cooking
+                        if (cookingStation.isCooking()) {
+                            float progress = cookingStation.getCookingProgress();
+                            Color barColor = progress < 0.8f ? new Color(255, 165, 0) : new Color(255, 69, 0);
+                            drawProgressBar(g2, x, y, (int) (progress * 100), 100, barColor);
+                        }
                     }
                 }
             }
@@ -515,7 +459,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
                         // Draw item initial
                         g2.setColor(Color.BLACK);
-                        g2.setFont(new Font("Arial", Font.BOLD, 10));
+                        g2.setFont(new Font("Monospaced", Font.BOLD, 10));
                         String itemName = c.getInventory().getName();
                         String initial = itemName.length() > 0 ? itemName.substring(0, Math.min(3, itemName.length()))
                                 : "?";
@@ -670,11 +614,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             // Order number
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("SansSerif", Font.BOLD, 10));
+            g2.setFont(new Font("Monospaced", Font.BOLD, 10));
             g2.drawString("#" + order.getId(), textX, textY);
 
             // Recipe name
-            g2.setFont(new Font("SansSerif", Font.PLAIN, 8));
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 8));
             String recipeName = order.getRecipe().getName().replace(" Burger", "");
             g2.drawString(recipeName, textX + 20, textY);
 
@@ -730,7 +674,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             // Time
             g2.setColor(indicatorColor);
-            g2.setFont(new Font("SansSerif", Font.BOLD, 8));
+            g2.setFont(new Font("Monospaced", Font.BOLD, 8));
             g2.drawString(String.format("%.0fs", order.getRemainingTime()), textX, textY + 18);
         }
     }
@@ -764,7 +708,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             // Draw chef name
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
+            g2.setFont(new Font("Monospaced", Font.BOLD, 14));
             g2.drawString(chef.getName(), uiX + 15, uiY + 25);
 
             // Draw held item info
@@ -788,7 +732,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
                 // Draw item name
                 g2.setColor(Color.WHITE);
-                g2.setFont(new Font("Arial", Font.PLAIN, 12));
+                g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
                 String itemName = chef.getInventory().getName();
                 g2.drawString(itemName, itemX + itemSize + 8, itemY + 15);
 
@@ -796,98 +740,137 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 if (chef.getInventory() instanceof nimonscooked.entity.item.ingredient.Ingredient) {
                     nimonscooked.entity.item.ingredient.Ingredient ing = (nimonscooked.entity.item.ingredient.Ingredient) chef
                             .getInventory();
-                    g2.setFont(new Font("Arial", Font.ITALIC, 10));
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(200, 200, 200));
                     g2.drawString(ing.getState().toString(), itemX + itemSize + 8, itemY + 30);
                 }
             } else {
                 // No item held
                 g2.setColor(new Color(150, 150, 150));
-                g2.setFont(new Font("Arial", Font.ITALIC, 12));
+                g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
                 g2.drawString("Empty hands", uiX + 15, uiY + 50);
             }
         }
 
         // Draw controls hint
         g2.setColor(new Color(200, 200, 200));
-        g2.setFont(new Font("Arial", Font.PLAIN, 10));
+        g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
         g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, screenHeight - 5);
     }
 
     private void drawGameOverScreen(Graphics2D g2) {
         System.out.println("[RENDER] drawGameOverScreen() called! State: " + gameState);
 
-        // Semi-transparent overlay
-        g2.setColor(new Color(0, 0, 0, 200));
-        g2.fillRect(0, 0, screenWidth, screenHeight);
+        // Check if we have custom background
+        BufferedImage background = (gameState == GameState.WIN) ? winScreenBackground : loseScreenBackground;
 
-        System.out.println("[RENDER] Drew black overlay");
+        if (background != null) {
+            // Draw background image
+            g2.drawImage(background, 0, 0, screenWidth, screenHeight, null);
 
-        // Title
-        g2.setFont(new Font("Arial", Font.BOLD, 72));
-        String title = (gameState == GameState.WIN) ? "YOU WIN!" : "YOU LOSE!";
-        Color titleColor = (gameState == GameState.WIN) ? new Color(255, 215, 0) : new Color(255, 50, 50);
-        g2.setColor(titleColor);
+            // Button positions (adjust these based on your lose_screen.png layout)
+            int buttonWidth = 385;
+            int buttonHeight = 70;
+            int buttonX = (screenWidth - buttonWidth) / 2;
 
-        FontMetrics fm = g2.getFontMetrics();
-        int titleWidth = fm.stringWidth(title);
-        g2.drawString(title, (screenWidth - titleWidth) / 2, screenHeight / 2 - 100);
+            // Adjust Y positions based on your image
+            int tryAgainY = 500; // Adjust this value
+            int backY = 600; // Adjust this value
 
-        // Final score
-        g2.setFont(new Font("Arial", Font.PLAIN, 32));
-        String scoreText = "Final Score: " + orderManager.getScore();
-        int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
-        g2.setColor(Color.WHITE);
-        g2.drawString(scoreText, (screenWidth - scoreWidth) / 2, screenHeight / 2 - 20);
+            // Draw selection highlight
+            int highlightY = selectedMenuIndex == 0 ? tryAgainY : backY;
+            g2.setColor(new Color(255, 255, 255, 100));
+            g2.fillRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
+            g2.setColor(new Color(255, 255, 255, 200));
+            g2.setStroke(new BasicStroke(4));
+            g2.drawRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
 
-        // Stats
-        g2.setFont(new Font("Arial", Font.PLAIN, 24));
-        String statsText = "Completed: " + orderManager.getCompletedOrders() + " | Expired: "
-                + orderManager.getExpiredOrders();
-        int statsWidth = g2.getFontMetrics().stringWidth(statsText);
-        g2.drawString(statsText, (screenWidth - statsWidth) / 2, screenHeight / 2 + 30);
+            // Draw button text
+            g2.setFont(new Font("Monospaced", Font.BOLD, 36));
+            FontMetrics fm = g2.getFontMetrics();
 
-        // Try Again button
-        int buttonWidth = 200;
-        int buttonHeight = 60;
-        int buttonX = (screenWidth - buttonWidth) / 2;
-        int buttonY = screenHeight / 2 + 80;
+            // Try Again button text
+            g2.setColor(selectedMenuIndex == 0 ? new Color(255, 255, 0) : new Color(255, 255, 100));
+            String tryAgainText = "TRY AGAIN";
+            int tryAgainTextWidth = fm.stringWidth(tryAgainText);
+            g2.drawString(tryAgainText, buttonX + (buttonWidth - tryAgainTextWidth) / 2, tryAgainY + 45);
 
-        tryAgainButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+            // Back to Menu button text
+            g2.setColor(selectedMenuIndex == 1 ? new Color(255, 100, 100) : new Color(255, 150, 150));
+            String backText = "BACK TO MENU";
+            int backTextWidth = fm.stringWidth(backText);
+            g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 45);
 
-        // Button background
-        g2.setColor(new Color(50, 150, 50));
-        g2.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
+        } else {
+            // Fallback: original rendering without background
+            // Semi-transparent overlay
+            g2.setColor(new Color(0, 0, 0, 200));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
 
-        // Button border
-        g2.setColor(new Color(100, 255, 100));
-        g2.setStroke(new BasicStroke(3));
-        g2.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
+            System.out.println("[RENDER] Drew black overlay");
 
-        // Button text
-        g2.setFont(new Font("Arial", Font.BOLD, 28));
-        String buttonText = "Try Again";
-        int buttonTextWidth = g2.getFontMetrics().stringWidth(buttonText);
-        g2.setColor(Color.WHITE);
-        g2.drawString(buttonText, buttonX + (buttonWidth - buttonTextWidth) / 2, buttonY + 38);
+            // Title
+            g2.setFont(new Font("Monospaced", Font.BOLD, 72));
+            String title = (gameState == GameState.WIN) ? "YOU WIN!" : "YOU LOSE!";
+            Color titleColor = (gameState == GameState.WIN) ? new Color(255, 215, 0) : new Color(255, 50, 50);
+            g2.setColor(titleColor);
 
-        // Back to Menu button
-        int backButtonY = buttonY + 70;
-        backButton = new Rectangle(buttonX, backButtonY, buttonWidth, buttonHeight);
-        g2.setColor(new Color(100, 100, 100));
-        g2.fillRoundRect(buttonX, backButtonY, buttonWidth, buttonHeight, 15, 15);
-        g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(3));
-        g2.drawRoundRect(buttonX, backButtonY, buttonWidth, buttonHeight, 15, 15);
+            FontMetrics fm = g2.getFontMetrics();
+            int titleWidth = fm.stringWidth(title);
+            g2.drawString(title, (screenWidth - titleWidth) / 2, screenHeight / 2 - 100);
 
-        String backText = "Back to Menu";
-        int backTextWidth = g2.getFontMetrics().stringWidth(backText);
-        g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backButtonY + 38);
+            // Final score
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 32));
+            String scoreText = "Final Score: " + orderManager.getScore();
+            int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
+            g2.setColor(Color.WHITE);
+            g2.drawString(scoreText, (screenWidth - scoreWidth) / 2, screenHeight / 2 - 20);
 
-        // Instruction
-        g2.setFont(new Font("Arial", Font.ITALIC, 18));
-        g2.setColor(new Color(200, 200, 200));
-        String instruction = "Click button or press SPACE to restart";
+            // Stats
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
+            String statsText = "Completed: " + orderManager.getCompletedOrders() + " | Expired: "
+                    + orderManager.getExpiredOrders();
+            int statsWidth = g2.getFontMetrics().stringWidth(statsText);
+            g2.drawString(statsText, (screenWidth - statsWidth) / 2, screenHeight / 2 + 30);
+
+            // Buttons
+            int buttonWidth = 200;
+            int buttonHeight = 60;
+            int buttonX = (screenWidth - buttonWidth) / 2;
+            int buttonY = screenHeight / 2 + 80;
+            int backButtonY = buttonY + 70;
+
+            // Try Again button
+            boolean tryAgainSelected = selectedMenuIndex == 0;
+            g2.setColor(tryAgainSelected ? new Color(70, 170, 70) : new Color(50, 150, 50));
+            g2.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
+            g2.setColor(new Color(100, 255, 100));
+            g2.setStroke(new BasicStroke(tryAgainSelected ? 5 : 3));
+            g2.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
+
+            g2.setFont(new Font("Monospaced", Font.BOLD, 28));
+            String buttonText = "Try Again";
+            int buttonTextWidth = g2.getFontMetrics().stringWidth(buttonText);
+            g2.setColor(Color.WHITE);
+            g2.drawString(buttonText, buttonX + (buttonWidth - buttonTextWidth) / 2, buttonY + 38);
+
+            // Back to Menu button
+            boolean backSelected = selectedMenuIndex == 1;
+            g2.setColor(backSelected ? new Color(120, 120, 120) : new Color(100, 100, 100));
+            g2.fillRoundRect(buttonX, backButtonY, buttonWidth, buttonHeight, 15, 15);
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
+            g2.drawRoundRect(buttonX, backButtonY, buttonWidth, buttonHeight, 15, 15);
+
+            String backText = "Back to Menu";
+            int backTextWidth = g2.getFontMetrics().stringWidth(backText);
+            g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backButtonY + 38);
+        }
+
+        // Keyboard hint (always show)
+        g2.setFont(new Font("Monospaced", Font.PLAIN, 18));
+        g2.setColor(new Color(255, 255, 255));
+        String instruction = "W/S to navigate | ENTER/SPACE to select | ESC for menu";
         int instrWidth = g2.getFontMetrics().stringWidth(instruction);
         g2.drawString(instruction, (screenWidth - instrWidth) / 2, screenHeight - 40);
     }
@@ -898,47 +881,60 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             // Scale image to fit screen
             g2.drawImage(menuBackground, 0, 0, screenWidth, screenHeight, null);
 
-            // Define button hitboxes and text based on image layout
-            // Buttons are centered horizontally
+            // Define button positions
             int buttonWidth = 385;
             int buttonHeight = 70;
             int buttonX = (screenWidth - buttonWidth) / 2; // Center buttons
 
-            // Start Game button (green, top)
+            // Button Y positions
             int startY = 382;
-            startButton = new Rectangle(buttonX, startY, buttonWidth, buttonHeight);
-
-            // How to Play button (blue, middle)
             int howToPlayY = 486;
-            howToPlayButton = new Rectangle(buttonX, howToPlayY, buttonWidth, buttonHeight);
-
-            // Exit button (red, bottom)
             int exitY = 588;
-            exitButton = new Rectangle(buttonX, exitY, buttonWidth, buttonHeight);
-
-            // Draw hover/press effects
-            drawButtonEffect(g2, startButton, new Color(50, 205, 50, 100));
-            drawButtonEffect(g2, howToPlayButton, new Color(30, 144, 255, 100));
-            drawButtonEffect(g2, exitButton, new Color(220, 20, 60, 100));
 
             // Draw button text with custom font and colors
-            g2.setFont(new Font("Arial", Font.BOLD, 36));
+            g2.setFont(new Font("Monospaced", Font.BOLD, 42));
             FontMetrics fm = g2.getFontMetrics();
 
-            // Start button text - bright yellow/gold to pop against background
-            g2.setColor(new Color(255, 255, 100)); // Bright yellow
+            // Draw button backgrounds first
+            // Start button background
+            boolean startSelected = selectedMenuIndex == 0;
+            g2.setColor(startSelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
+            g2.fillRoundRect(buttonX, startY - 10, buttonWidth, buttonHeight, 15, 15);
+            g2.setColor(startSelected ? new Color(255, 255, 0, 200) : new Color(255, 255, 100, 150));
+            g2.setStroke(new BasicStroke(startSelected ? 4 : 2));
+            g2.drawRoundRect(buttonX, startY - 10, buttonWidth, buttonHeight, 15, 15);
+
+            // How to Play button background
+            boolean howToPlaySelected = selectedMenuIndex == 1;
+            g2.setColor(howToPlaySelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
+            g2.fillRoundRect(buttonX, howToPlayY - 10, buttonWidth, buttonHeight, 15, 15);
+            g2.setColor(howToPlaySelected ? new Color(0, 255, 255, 200) : new Color(100, 255, 255, 150));
+            g2.setStroke(new BasicStroke(howToPlaySelected ? 4 : 2));
+            g2.drawRoundRect(buttonX, howToPlayY - 10, buttonWidth, buttonHeight, 15, 15);
+
+            // Exit button background
+            boolean exitSelected = selectedMenuIndex == 2;
+            g2.setColor(exitSelected ? new Color(50, 50, 50, 180) : new Color(30, 30, 30, 140));
+            g2.fillRoundRect(buttonX, exitY - 10, buttonWidth, buttonHeight, 15, 15);
+            g2.setColor(exitSelected ? new Color(255, 0, 100, 200) : new Color(255, 100, 150, 150));
+            g2.setStroke(new BasicStroke(exitSelected ? 4 : 2));
+            g2.drawRoundRect(buttonX, exitY - 10, buttonWidth, buttonHeight, 15, 15);
+
+            // Draw button text on top of backgrounds
+            // Start button text - bright yellow/gold
+            g2.setColor(startSelected ? new Color(255, 255, 0) : new Color(255, 255, 255));
             String startText = "START GAME";
             int startTextWidth = fm.stringWidth(startText);
             g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 45);
 
             // How to Play button text - cyan/light blue
-            g2.setColor(new Color(100, 255, 255)); // Bright cyan
+            g2.setColor(howToPlaySelected ? new Color(0, 255, 255) : new Color(255, 255, 255));
             String howToPlayText = "HOW TO PLAY";
             int howToPlayTextWidth = fm.stringWidth(howToPlayText);
             g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 45);
 
             // Exit button text - bright red/pink
-            g2.setColor(new Color(255, 100, 150)); // Bright pink
+            g2.setColor(exitSelected ? new Color(255, 100, 100) : new Color(255, 255, 255));
             String exitText = "EXIT";
             int exitTextWidth = fm.stringWidth(exitText);
             g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 45);
@@ -948,13 +944,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             g2.setColor(new Color(255, 228, 196));
             g2.fillRect(0, 0, screenWidth, screenHeight);
 
-            g2.setFont(new Font("Arial", Font.BOLD, 80));
+            g2.setFont(new Font("Monospaced", Font.BOLD, 80));
             g2.setColor(new Color(255, 100, 50));
             String title = "NIMONSCOOKED";
             int titleWidth = g2.getFontMetrics().stringWidth(title);
             g2.drawString(title, (screenWidth - titleWidth) / 2, 150);
 
-            g2.setFont(new Font("Arial", Font.ITALIC, 24));
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
             g2.setColor(new Color(100, 100, 100));
             String subtitle = "Kelompok N - OOP Project";
             int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
@@ -966,58 +962,49 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             int startY = 280;
             int spacing = 80;
 
-            startButton = new Rectangle(buttonX, startY, buttonWidth, buttonHeight);
-            g2.setColor(new Color(50, 205, 50));
+            // Start Game button
+            boolean startSelected = selectedMenuIndex == 0;
+            g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
             g2.fillRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
             g2.setColor(Color.WHITE);
-            g2.setStroke(new BasicStroke(3));
+            g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
             g2.drawRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
             g2.setFont(new Font("Arial", Font.BOLD, 32));
             String startText = "Start Game";
             int startTextWidth = g2.getFontMetrics().stringWidth(startText);
             g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 40);
 
+            // How to Play button
             int howToPlayY = startY + spacing;
-            howToPlayButton = new Rectangle(buttonX, howToPlayY, buttonWidth, buttonHeight);
-            g2.setColor(new Color(30, 144, 255));
+            boolean howToPlaySelected = selectedMenuIndex == 1;
+            g2.setColor(howToPlaySelected ? new Color(50, 164, 255) : new Color(30, 144, 255));
             g2.fillRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
             g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(howToPlaySelected ? 5 : 3));
             g2.drawRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
             String howToPlayText = "How to Play";
             int howToPlayTextWidth = g2.getFontMetrics().stringWidth(howToPlayText);
             g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 40);
 
+            // Exit button
             int exitY = howToPlayY + spacing;
-            exitButton = new Rectangle(buttonX, exitY, buttonWidth, buttonHeight);
-            g2.setColor(new Color(220, 20, 60));
+            boolean exitSelected = selectedMenuIndex == 2;
+            g2.setColor(exitSelected ? new Color(240, 40, 80) : new Color(220, 20, 60));
             g2.fillRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
             g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(exitSelected ? 5 : 3));
             g2.drawRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
             String exitText = "Exit";
             int exitTextWidth = g2.getFontMetrics().stringWidth(exitText);
             g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 40);
         }
-    }
 
-    private void drawButtonEffect(Graphics2D g2, Rectangle button, Color baseColor) {
-        if (button == null)
-            return;
-
-        // Draw pressed effect (darker overlay + slight offset)
-        if (button == pressedButton) {
-            g2.setColor(new Color(0, 0, 0, 100));
-            g2.fillRoundRect(button.x + 2, button.y + 2, button.width, button.height, 15, 15);
-        }
-        // Draw hover effect (lighter overlay + glow)
-        else if (button == hoveredButton) {
-            g2.setColor(new Color(255, 255, 255, 80));
-            g2.fillRoundRect(button.x, button.y, button.width, button.height, 15, 15);
-
-            // Add glow border
-            g2.setColor(new Color(255, 255, 255, 150));
-            g2.setStroke(new BasicStroke(3));
-            g2.drawRoundRect(button.x, button.y, button.width, button.height, 15, 15);
-        }
+        // Draw keyboard hint
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        String hint = "Use W/S or Arrow Keys to navigate | ENTER/SPACE to select";
+        int hintWidth = g2.getFontMetrics().stringWidth(hint);
+        g2.drawString(hint, (screenWidth - hintWidth) / 2, screenHeight - 30);
     }
 
     private void drawHowToPlay(Graphics2D g2) {
@@ -1062,23 +1049,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             g2.drawString(instructions[i], 100, startY + i * lineHeight);
         }
 
-        // Back Button
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-        int buttonX = (screenWidth - buttonWidth) / 2;
-        int buttonY = screenHeight - 100;
-
-        backButton = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        g2.setColor(new Color(100, 100, 100));
-        g2.fillRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
-        g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(3));
-        g2.drawRoundRect(buttonX, buttonY, buttonWidth, buttonHeight, 15, 15);
-
-        g2.setFont(new Font("Arial", Font.BOLD, 24));
-        String backText = "Back";
-        int backTextWidth = g2.getFontMetrics().stringWidth(backText);
-        g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, buttonY + 33);
+        // Instruction at bottom
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        String hint = "Press ENTER, SPACE, or ESC to return to menu";
+        int hintWidth = g2.getFontMetrics().stringWidth(hint);
+        g2.drawString(hint, (screenWidth - hintWidth) / 2, screenHeight - 30);
     }
 
     private void drawStageSelect(Graphics2D g2) {
@@ -1109,17 +1085,19 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             g2.drawString(info[i], (screenWidth - infoWidth) / 2, infoY + i * 40);
         }
 
-        // Select button
+        // Menu options
         int buttonWidth = 250;
         int buttonHeight = 60;
         int buttonX = (screenWidth - buttonWidth) / 2;
         int selectY = 380;
+        int backY = selectY + 80;
 
-        selectStageButton = new Rectangle(buttonX, selectY, buttonWidth, buttonHeight);
-        g2.setColor(new Color(50, 205, 50));
+        // START button
+        boolean startSelected = selectedMenuIndex == 0;
+        g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
         g2.fillRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
         g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(3));
+        g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
         g2.drawRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
 
         g2.setFont(new Font("Arial", Font.BOLD, 32));
@@ -1128,41 +1106,128 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g2.drawString(selectText, buttonX + (buttonWidth - selectTextWidth) / 2, selectY + 40);
 
         // Back button
-        int backY = selectY + 80;
-        backButton = new Rectangle(buttonX, backY, buttonWidth, buttonHeight);
-        g2.setColor(new Color(100, 100, 100));
+        boolean backSelected = selectedMenuIndex == 1;
+        g2.setColor(backSelected ? new Color(120, 120, 120) : new Color(100, 100, 100));
         g2.fillRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
         g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
         g2.drawRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
 
         g2.setFont(new Font("Arial", Font.BOLD, 28));
         String backText = "Back";
         int backTextWidth = g2.getFontMetrics().stringWidth(backText);
         g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 38);
+
+        // Keyboard hint
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        String hint = "Use W/S to navigate | ENTER/SPACE to select | ESC to go back";
+        int hintWidth = g2.getFontMetrics().stringWidth(hint);
+        g2.drawString(hint, (screenWidth - hintWidth) / 2, screenHeight - 30);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
-        // Handle menu navigation
-        if (gameState == GameState.HOW_TO_PLAY && keyCode == KeyEvent.VK_ESCAPE) {
-            gameState = GameState.MENU;
+        // Handle MENU state
+        if (gameState == GameState.MENU) {
+            if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
+                selectedMenuIndex--;
+                if (selectedMenuIndex < 0)
+                    selectedMenuIndex = maxMenuIndex;
+                repaint();
+            } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
+                selectedMenuIndex++;
+                if (selectedMenuIndex > maxMenuIndex)
+                    selectedMenuIndex = 0;
+                repaint();
+            } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                switch (selectedMenuIndex) {
+                    case 0: // Start Game
+                        gameState = GameState.STAGE_SELECT;
+                        selectedMenuIndex = 0;
+                        maxMenuIndex = 1; // Select Stage / Back
+                        break;
+                    case 1: // How to Play
+                        gameState = GameState.HOW_TO_PLAY;
+                        break;
+                    case 2: // Exit
+                        System.exit(0);
+                        break;
+                }
+                repaint();
+            }
             return;
         }
 
-        if (gameState == GameState.STAGE_SELECT && keyCode == KeyEvent.VK_ESCAPE) {
-            gameState = GameState.MENU;
+        // Handle HOW_TO_PLAY state
+        if (gameState == GameState.HOW_TO_PLAY) {
+            if (keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                gameState = GameState.MENU;
+                selectedMenuIndex = 0;
+                maxMenuIndex = 2;
+                repaint();
+            }
+            return;
+        }
+
+        // Handle STAGE_SELECT state
+        if (gameState == GameState.STAGE_SELECT) {
+            if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
+                selectedMenuIndex--;
+                if (selectedMenuIndex < 0)
+                    selectedMenuIndex = maxMenuIndex;
+                repaint();
+            } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
+                selectedMenuIndex++;
+                if (selectedMenuIndex > maxMenuIndex)
+                    selectedMenuIndex = 0;
+                repaint();
+            } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                if (selectedMenuIndex == 0) {
+                    // Start the game
+                    startGame();
+                } else {
+                    // Back to menu
+                    gameState = GameState.MENU;
+                    selectedMenuIndex = 0;
+                    maxMenuIndex = 2;
+                }
+                repaint();
+            } else if (keyCode == KeyEvent.VK_ESCAPE) {
+                gameState = GameState.MENU;
+                selectedMenuIndex = 0;
+                maxMenuIndex = 2;
+                repaint();
+            }
             return;
         }
 
         // Handle game over/win screens
         if (gameState == GameState.WIN || gameState == GameState.LOSE) {
-            if (keyCode == KeyEvent.VK_SPACE) {
-                restartGame();
+            if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
+                selectedMenuIndex = 0; // Try Again
+                repaint();
+            } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
+                selectedMenuIndex = 1; // Back to Menu
+                repaint();
+            } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                if (selectedMenuIndex == 0) {
+                    restartGame();
+                } else {
+                    gameState = GameState.MENU;
+                    selectedMenuIndex = 0;
+                    maxMenuIndex = 2;
+                    resetGame();
+                }
+                repaint();
             } else if (keyCode == KeyEvent.VK_ESCAPE) {
                 gameState = GameState.MENU;
+                selectedMenuIndex = 0;
+                maxMenuIndex = 2;
                 resetGame();
+                repaint();
             }
             return;
         }
@@ -1171,6 +1236,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         if (gameState == GameState.PLAYING) {
             if (keyCode == KeyEvent.VK_ESCAPE) {
                 gameState = GameState.MENU;
+                selectedMenuIndex = 0;
+                maxMenuIndex = 2;
                 resetGame();
             } else {
                 inputHandler.handleInput(keyCode, getActiveChef());

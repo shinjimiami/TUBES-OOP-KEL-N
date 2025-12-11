@@ -21,17 +21,13 @@ Semua placeholder sudah dibuat! Sekarang kamu bisa replace dengan gambar custom 
 ### Menu
 - ✅ start.png (Main Menu)
 
+### Maps
+- ✅ map_d.png (Full Kitchen Layout 1200x880px) - `/maps/`
+  - **Note**: Full map image menggantikan individual tiles, jadi tiles (floor/wall/counter) tidak diperlukan lagi
+
 ---
 
 ## 🆕 BARU DIBUAT (Placeholder - Perlu Diganti!)
-
-### 📐 TILES (3 files) - `/tiles/`
-**PRIORITAS TINGGI** - Ini untuk lantai dan dinding dapur
-```
-tiles/floor.png          → Lantai dapur (64x64)
-tiles/wall.png           → Dinding dapur (64x64)
-tiles/counter.png        → Counter/meja (64x64)
-```
 
 ### 🍳 COOKING STATION STATES (17 files) - `/stations/cooking/`
 **PRIORITAS TINGGI** - Visual panci di kompor dengan ingredient

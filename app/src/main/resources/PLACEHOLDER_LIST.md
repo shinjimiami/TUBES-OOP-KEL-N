@@ -2,10 +2,11 @@
 
 Daftar asset yang perlu ditambahkan. Placeholder sudah dibuat dengan generate_all_placeholders.py
 
-## Tiles (Lantai & Dinding)
-- [ ] `tiles/floor.png` - Lantai dapur
-- [ ] `tiles/wall.png` - Dinding dapur
-- [ ] `tiles/counter.png` - Counter/meja kerja
+## Maps (Full Map Layouts)
+- [x] `maps/map_d.png` - Complex Kitchen Layout (1200x880px, 15x11 tiles)
+  - Layout features: Ingredient boxes, counters, stoves, serving stations, delivery window
+  - Full map image (not tile-based)
+  - **Note**: With full map image, individual tiles (floor.png, wall.png, counter.png) are no longer needed
 
 ## Stations (sudah ada semua)
 - [x] `stations/ingredient_storage.png` - Tempat penyimpanan bahan
