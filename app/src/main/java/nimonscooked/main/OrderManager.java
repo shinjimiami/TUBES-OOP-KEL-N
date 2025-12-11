@@ -84,7 +84,8 @@ public class OrderManager {
                 activeOrders.remove(o);
                 expiredOrders++;
                 System.out.println("[ORDER] ORDER EXPIRED: " + o.getRecipe().getName() + " (-10 points)");
-                score = Math.max(0, score - 10); // Kurangi score tapi tidak boleh negatif
+                score -= 10; // Allow negative score for lose condition
+                System.out.println("[ORDER] New score: " + score);
             }
         }
     }
@@ -172,5 +173,15 @@ public class OrderManager {
 
     public int getExpiredOrders() {
         return expiredOrders;
+    }
+
+    // Reset game state
+    public void reset() {
+        activeOrders.clear();
+        score = 0;
+        completedOrders = 0;
+        expiredOrders = 0;
+        orderCounter = 0;
+        System.out.println("[ORDER MANAGER] Reset!");
     }
 }

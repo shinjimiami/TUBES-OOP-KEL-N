@@ -36,6 +36,20 @@ public class PickUpDropCommand implements Command {
 
         char tileType = map.getGrid()[targetY][targetX];
 
+        // Check if there's an item on the floor at target position
+        if (map.hasItemOnFloor(targetX, targetY)) {
+            if (chef.getInventory() == null) {
+                Item floorItem = map.pickupItemFromFloor(targetX, targetY);
+                chef.setInventory(floorItem);
+                System.out.println("[ACTION] Picked up " + floorItem.getName() + " from floor at (" + targetX + ", "
+                        + targetY + ")");
+                return;
+            } else {
+                System.out.println("[ACTION] Hands full! Cannot pick up item from floor.");
+                return;
+            }
+        }
+
         if (tileType == 'T') {
             if (chef.getInventory() != null) {
                 System.out.println("[ACTION] Item dibuang ke Trash: " + chef.getInventory().getName());

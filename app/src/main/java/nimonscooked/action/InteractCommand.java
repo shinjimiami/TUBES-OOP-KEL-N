@@ -31,6 +31,21 @@ public class InteractCommand implements Command {
             case RIGHT -> targetX++;
         }
 
+        // 2.5. Check if there's an item on the floor at target position
+        if (map.hasItemOnFloor(targetX, targetY)) {
+            if (chef.getInventory() == null) {
+                var floorItem = map.pickupItemFromFloor(targetX, targetY);
+                chef.setInventory(floorItem);
+                System.out.println("[INTERACT] " + chef.getName() + " picked up " + floorItem.getName()
+                        + " from floor at (" + targetX + ", " + targetY + ")");
+                return;
+            } else {
+                System.out
+                        .println("[INTERACT] " + chef.getName() + "'s hands are full! Cannot pick up item from floor.");
+                return;
+            }
+        }
+
         // 3. Ambil Objek Station dari Map
         Station targetStation = map.getStationAt(targetX, targetY);
 

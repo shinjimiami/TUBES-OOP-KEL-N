@@ -27,6 +27,12 @@ public class InputHandler {
         // Station-specific Actions
         keyBindings.put(KeyEvent.VK_F, new CookingCommand(gameMap)); // F = Start/Stop cooking
         keyBindings.put(KeyEvent.VK_X, new CuttingCommand(gameMap)); // X = Manual cut (optional)
+
+        // Dash ability
+        keyBindings.put(KeyEvent.VK_SPACE, new DashCommand(gameMap)); // SPACE = Dash
+
+        // Throw ability
+        keyBindings.put(KeyEvent.VK_K, new ThrowCommand(gameMap, chefs)); // K = Throw item
     }
 
     public void handleInput(int keyCode, Chef activeChef) {

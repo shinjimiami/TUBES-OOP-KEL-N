@@ -3,11 +3,17 @@ package nimonscooked.object;
 import nimonscooked.entity.station.*;
 import nimonscooked.entity.station.KitchenUtensilStorage;
 import nimonscooked.enums.IngredientType;
+import nimonscooked.entity.item.Item;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameMap {
     private char[][] grid;
     // Array 2D ini akan menyimpan objek Station yang sebenarnya (bukan cuma huruf)
     private Station[][] stationGrid;
+
+    // Map to store items on floor: Key = "x,y", Value = Item
+    private Map<String, Item> floorItems = new HashMap<>();
 
     private final int rows = 10;
     private final int cols = 14;
@@ -91,5 +97,30 @@ public class GameMap {
 
     public int getCols() {
         return cols;
+    }
+
+    // Floor item management for throw mechanic
+    public boolean placeItemOnFloor(int x, int y, Item item) {
+        if (!isWalkable(x, y)) {
+            return false;
+        }
+        String key = x + "," + y;
+        floorItems.put(key, item);
+        return true;
+    }
+
+    public Item getItemOnFloor(int x, int y) {
+        String key = x + "," + y;
+        return floorItems.get(key);
+    }
+
+    public Item pickupItemFromFloor(int x, int y) {
+        String key = x + "," + y;
+        return floorItems.remove(key);
+    }
+
+    public boolean hasItemOnFloor(int x, int y) {
+        String key = x + "," + y;
+        return floorItems.containsKey(key);
     }
 }
