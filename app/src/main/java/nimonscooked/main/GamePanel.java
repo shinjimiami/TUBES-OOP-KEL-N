@@ -12,7 +12,6 @@ import java.util.List;
 import java.io.InputStream;
 
 import nimonscooked.entity.Chef;
-// input handling moved to KeyHandler in main
 import nimonscooked.object.GameMap;
 
 public class GamePanel extends JPanel implements Runnable, KeyListener {
@@ -20,7 +19,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     GameMap gameMap = new GameMap();
 
-    // Layout constants
+    /*
+    -------------------------------------------------- LAYOUT DAN DIMENSI  --------------------------------------------------
+     */
     final int topMargin = 30; // Space for orders
     final int bottomMargin = 90; // Space for character panel
     final int mapWidth = tileSize * gameMap.getCols();
@@ -39,6 +40,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public CollisionChecker getCollisionChecker() {
         return collisionChecker;
     }
+
+    /*
+    -------------------------------------------------- ENTITAS DAN ASET (Chef, Sprites, Lantai)  --------------------------------------------------
+     */
     List<Chef> chefs = new ArrayList<>();
     int activeChefIndex = 0;
     long lastChefSwitchTime = 0;
@@ -60,10 +65,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     Color shinyGold = new Color(255, 215, 0);
     Color shinyGoldGlow = new Color(255, 223, 0, 120); // Transparan
 
+    /*
+    -------------------------------------------------- PAUSE, ORDER, DAN SOUND MANAGER  --------------------------------------------------
+     */
+
     boolean isPaused = false;
     int pauseSelectedIndex = 0; // 0=Resume, 1=Controls, 2=Quit
     final int PAUSE_MENU_SIZE = 3;
     boolean showPauseControls = false; // Flag to show controls in pause menu
+
     // Order management
     OrderManager orderManager;
     long lastOrderTime = 0;
@@ -72,6 +82,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public Sound sound = new Sound(); // <- SUDAH ADA
 
+
+    /*
+    --------------------------------------------------------- GAME STATE DAN NAVIGASI MENU ---------------------------------------------------------
+    */
     // Game state management
     enum GameState {
         MENU, // Main menu
@@ -90,6 +104,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     int selectedMenuIndex = 0; // 0=Start, 1=How to Play, 2=Exit
     int maxMenuIndex = 2;
 
+    /*
+    -------------------------------------------------- KONSTRUKTOR DAN INISIALISASI  --------------------------------------------------
+     */
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
@@ -110,12 +127,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         collisionChecker = new CollisionChecker();
         ui = new UI(this);
 
-        // --- INTEGRASI SOUND: Memulai musik awal ---
+        // Memulai musik awal
         playMusicByState();
     }
 
-    // Asset loading moved to AssetSetter
-
+    /*
+    -------------------------------------------------- GAME UNTILITY AND LOOP CONTROL  --------------------------------------------------
+     */
     public Chef getActiveChef() {
         return chefs.get(activeChefIndex);
     }
@@ -240,8 +258,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     // Auto-start cooking jika ada item dan belum cooking
                     if (!cookingStation.isCooking() && cookingStation.getContainedItem() != null) {
                         cookingStation.startCooking(currentTime);
-                        // Anda bisa memanggil sound FRY di sini jika ingin bunyi langsung
-                        // playSoundEffect(Sound.FRY);
+//                        playSoundEffect(Sound.FRY);
                     }
                     cookingStation.update(currentTime);
                 }
@@ -249,6 +266,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         }
     }
 
+
+    /*
+    -------------------------------------------------- RENDERING AND SOUND UTILITIES  --------------------------------------------------
+     */
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -358,6 +379,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         ui.drawStageSelect(g2);
     }
 
+    /*
+    -------------------------------------------------- INPUT HANDLING  --------------------------------------------------
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
@@ -383,7 +407,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                         gameState = GameState.STAGE_SELECT;
                         selectedMenuIndex = 0;
                         maxMenuIndex = 1; // Select Stage / Back
-                        playMusicByState(); // Ganti musik jika perlu
+                        playMusicByState();
                         break;
                     case 1: // How to Play
                         gameState = GameState.HOW_TO_PLAY;
