@@ -5,13 +5,19 @@ import nimonscooked.entity.order.Order;
 import nimonscooked.entity.order.Recipe;
 import nimonscooked.enums.IngredientState;
 import nimonscooked.interfaces.Preparable;
+import nimonscooked.interfaces.GameObserver;
+import nimonscooked.interfaces.GameSubject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList; // Thread-safe list
 
-public class OrderManager {
+/**
+ * SINGLETON PATTERN: OrderManager (only one instance)
+ * OBSERVER PATTERN: Implements GameSubject to notify observers
+ */
+public class OrderManager implements GameSubject {
     private static OrderManager instance;
 
     // Gunakan CopyOnWriteArrayList untuk mencegah error saat menghapus order di
@@ -26,6 +32,14 @@ public class OrderManager {
     private int completedOrders = 0;
     private int expiredOrders = 0;
 
+    // Stage Timer (3 minutes = 180 seconds)
+    private float stageTimeRemaining = 180f;
+    private final float STAGE_DURATION = 180f;
+    private boolean stageTimerRunning = false;
+
+    // OBSERVER PATTERN: List of observers
+    private List<GameObserver> observers = new ArrayList<>();
+
     private OrderManager() {
         initBurgerRecipes();
     }
@@ -35,6 +49,31 @@ public class OrderManager {
             instance = new OrderManager();
         }
         return instance;
+    }
+
+    // OBSERVER PATTERN: Add observer
+    @Override
+    public void addObserver(GameObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+            System.out.println("[ORDER MANAGER] Observer added");
+        }
+    }
+
+    // OBSERVER PATTERN: Remove observer
+    @Override
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+        System.out.println("[ORDER MANAGER] Observer removed");
+    }
+
+    // OBSERVER PATTERN: Notify all observers
+    @Override
+    public void notifyObservers() {
+        for (GameObserver observer : observers) {
+            observer.onScoreChanged(score);
+            observer.onTimeUpdate(stageTimeRemaining);
+        }
     }
 
     // Definisi Resep Sesuai Map Type C
@@ -78,6 +117,17 @@ public class OrderManager {
     }
 
     public void update(float deltaTime) {
+        // Update stage timer if running
+        if (stageTimerRunning && stageTimeRemaining > 0) {
+            stageTimeRemaining -= deltaTime;
+            if (stageTimeRemaining < 0) {
+                stageTimeRemaining = 0;
+            }
+            // Notify observers of time update
+            notifyObservers();
+        }
+
+        // Update order timers
         for (Order o : activeOrders) {
             o.updateTimer(deltaTime);
             if (o.isExpired()) {
@@ -86,6 +136,12 @@ public class OrderManager {
                 System.out.println("[ORDER] ORDER EXPIRED: " + o.getRecipe().getName() + " (-10 points)");
                 score -= 10; // Allow negative score for lose condition
                 System.out.println("[ORDER] New score: " + score);
+
+                // OBSERVER PATTERN: Notify observers of order expiration
+                for (GameObserver observer : observers) {
+                    observer.onOrderExpired(-10);
+                }
+                notifyObservers();
             }
         }
     }
@@ -105,6 +161,13 @@ public class OrderManager {
                 System.out.println("ORDER COMPLETED: " + order.getRecipe().getName()
                         + " +\" + earnedScore + \" points! Total: " + score);
                 activeOrders.remove(order); // Hapus order yang selesai
+
+                // OBSERVER PATTERN: Notify observers of order completion
+                for (GameObserver observer : observers) {
+                    observer.onOrderCompleted(earnedScore);
+                }
+                notifyObservers();
+
                 return true;
             }
         }
@@ -175,6 +238,35 @@ public class OrderManager {
         return expiredOrders;
     }
 
+    // Stage Timer methods
+    public float getStageTimeRemaining() {
+        return stageTimeRemaining;
+    }
+
+    public boolean isStageTimeUp() {
+        return stageTimeRemaining <= 0;
+    }
+
+    public void startStageTimer() {
+        stageTimerRunning = true;
+        System.out.println("[STAGE TIMER] Started: 3 minutes");
+    }
+
+    public void stopStageTimer() {
+        stageTimerRunning = false;
+        System.out.println("[STAGE TIMER] Stopped at: " + formatTime(stageTimeRemaining));
+    }
+
+    public String getFormattedStageTime() {
+        return formatTime(stageTimeRemaining);
+    }
+
+    private String formatTime(float seconds) {
+        int minutes = (int) (seconds / 60);
+        int secs = (int) (seconds % 60);
+        return String.format("%d:%02d", minutes, secs);
+    }
+
     // Reset game state
     public void reset() {
         activeOrders.clear();
@@ -182,6 +274,8 @@ public class OrderManager {
         completedOrders = 0;
         expiredOrders = 0;
         orderCounter = 0;
+        stageTimeRemaining = STAGE_DURATION;
+        stageTimerRunning = false;
         System.out.println("[ORDER MANAGER] Reset!");
     }
 }

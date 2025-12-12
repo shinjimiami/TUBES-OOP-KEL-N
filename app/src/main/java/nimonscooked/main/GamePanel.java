@@ -20,7 +20,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     GameMap gameMap = new GameMap();
 
     /*
-    -------------------------------------------------- LAYOUT DAN DIMENSI  --------------------------------------------------
+     * -------------------------------------------------- LAYOUT DAN DIMENSI
+     * --------------------------------------------------
      */
     final int topMargin = 30; // Space for orders
     final int bottomMargin = 90; // Space for character panel
@@ -42,7 +43,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     /*
-    -------------------------------------------------- ENTITAS DAN ASET (Chef, Sprites, Lantai)  --------------------------------------------------
+     * -------------------------------------------------- ENTITAS DAN ASET (Chef,
+     * Sprites, Lantai) --------------------------------------------------
      */
     List<Chef> chefs = new ArrayList<>();
     int activeChefIndex = 0;
@@ -52,10 +54,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     BufferedImage[] chef1Sprites = new BufferedImage[8];
     BufferedImage[] chef2Sprites = new BufferedImage[8];
     BufferedImage menuBackground;
+    BufferedImage stageSelectBackground; // Full background for stage select
     BufferedImage winScreenBackground;
     BufferedImage loseScreenBackground;
     BufferedImage mapBackground; // Background image for the map
     BufferedImage pauseOverlayImage;
+    BufferedImage timerBackground; // Timer box background image
+    BufferedImage mapCThumbnail; // Thumbnail for map C in stage select
 
     // Warna Pastel Lantai
     Color pastelOrange = new Color(255, 223, 186);
@@ -66,7 +71,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     Color shinyGoldGlow = new Color(255, 223, 0, 120); // Transparan
 
     /*
-    -------------------------------------------------- PAUSE, ORDER, DAN SOUND MANAGER  --------------------------------------------------
+     * -------------------------------------------------- PAUSE, ORDER, DAN SOUND
+     * MANAGER --------------------------------------------------
      */
 
     boolean isPaused = false;
@@ -82,10 +88,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public Sound sound = new Sound(); // <- SUDAH ADA
 
-
     /*
-    --------------------------------------------------------- GAME STATE DAN NAVIGASI MENU ---------------------------------------------------------
-    */
+     * --------------------------------------------------------- GAME STATE DAN
+     * NAVIGASI MENU ---------------------------------------------------------
+     */
     // Game state management
     enum GameState {
         MENU, // Main menu
@@ -97,7 +103,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     GameState gameState = GameState.MENU; // Start at menu
-    private final int WIN_COMPLETED_ORDERS = 2; // Win after 2 completed orders
+    private final int WIN_COMPLETED_ORDERS = 1; // Win after 1 completed order
     private final int LOSE_SCORE = -10; // Lose condition
 
     // Menu navigation
@@ -105,7 +111,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     int maxMenuIndex = 2;
 
     /*
-    -------------------------------------------------- KONSTRUKTOR DAN INISIALISASI  --------------------------------------------------
+     * -------------------------------------------------- KONSTRUKTOR DAN
+     * INISIALISASI --------------------------------------------------
      */
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -132,7 +139,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     /*
-    -------------------------------------------------- GAME UNTILITY AND LOOP CONTROL  --------------------------------------------------
+     * -------------------------------------------------- GAME UNTILITY AND LOOP
+     * CONTROL --------------------------------------------------
      */
     public Chef getActiveChef() {
         return chefs.get(activeChefIndex);
@@ -148,6 +156,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         // Start the game from stage select
         gameState = GameState.PLAYING;
         lastOrderTime = System.currentTimeMillis();
+        orderManager.startStageTimer(); // Start 3-minute timer
         System.out.println("[GAME] Starting game...");
     }
 
@@ -217,24 +226,34 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         // Check win/lose conditions
         int currentScore = orderManager.getScore();
         int completedOrders = orderManager.getCompletedOrders();
+        boolean timeUp = orderManager.isStageTimeUp();
 
         // Debug: Log check every 5 seconds
         if (frameCounter % 300 == 0) {
             System.out.println(
                     "[GAME] Check - Orders: " + completedOrders + "/" + WIN_COMPLETED_ORDERS + ", Score: "
-                            + currentScore + " (Lose: <=" + LOSE_SCORE + ")");
+                            + currentScore + " (Lose: <=" + LOSE_SCORE + "), Time: "
+                            + orderManager.getFormattedStageTime());
         }
 
+        // Win: Complete target orders before time runs out
         if (completedOrders >= WIN_COMPLETED_ORDERS) {
             gameState = GameState.WIN;
+            orderManager.stopStageTimer();
             System.out
                     .println("[GAME] YOU WIN! Completed " + completedOrders + " orders! Final Score: " + currentScore);
-            // --- INTEGRASI SOUND: Win state ---
             playMusicByState();
-        } else if (currentScore <= LOSE_SCORE) {
+        }
+        // Lose: Score too low OR time runs out
+        else if (currentScore <= LOSE_SCORE) {
             gameState = GameState.LOSE;
+            orderManager.stopStageTimer();
             System.out.println("[GAME] YOU LOSE! Final Score: " + currentScore);
-            // --- INTEGRASI SOUND: Lose state ---
+            playMusicByState();
+        } else if (timeUp) {
+            gameState = GameState.LOSE;
+            orderManager.stopStageTimer();
+            System.out.println("[GAME] TIME UP! Final Score: " + currentScore);
             playMusicByState();
         }
     }
@@ -258,7 +277,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     // Auto-start cooking jika ada item dan belum cooking
                     if (!cookingStation.isCooking() && cookingStation.getContainedItem() != null) {
                         cookingStation.startCooking(currentTime);
-//                        playSoundEffect(Sound.FRY);
+                        // playSoundEffect(Sound.FRY);
                     }
                     cookingStation.update(currentTime);
                 }
@@ -266,9 +285,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         }
     }
 
-
     /*
-    -------------------------------------------------- RENDERING AND SOUND UTILITIES  --------------------------------------------------
+     * -------------------------------------------------- RENDERING AND SOUND
+     * UTILITIES --------------------------------------------------
      */
     @Override
     public void paintComponent(Graphics g) {
@@ -380,7 +399,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     /*
-    -------------------------------------------------- INPUT HANDLING  --------------------------------------------------
+     * -------------------------------------------------- INPUT HANDLING
+     * --------------------------------------------------
      */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -435,15 +455,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             return;
         }
 
-        // Handle STAGE_SELECT state
+        // Handle STAGE_SELECT state - HORIZONTAL navigation (A/D)
         if (gameState == GameState.STAGE_SELECT) {
-            if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
+            if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_A) {
                 selectedMenuIndex--;
                 if (selectedMenuIndex < 0)
                     selectedMenuIndex = maxMenuIndex;
                 playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
-            } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
+            } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_D) {
                 selectedMenuIndex++;
                 if (selectedMenuIndex > maxMenuIndex)
                     selectedMenuIndex = 0;

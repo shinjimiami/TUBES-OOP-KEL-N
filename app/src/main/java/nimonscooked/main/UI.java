@@ -102,15 +102,15 @@ public class UI {
 		int lineHeight = 28;
 
 		String[] lines = new String[] {
-			"MOVE: W/A/S/D or Arrow Keys — Move your chef around the kitchen.",
-			"INTERACT: V — Pick up or place ingredients, use stations (press near a station).",
-			"DASH: SPACE — Perform a short dash to move faster for a brief moment.",
-			"THROW: K — Throw the item you hold to another chef or into a station.",
-			"\n",
-			"Tips:",
-			"- Use dash to cross gaps or avoid hazards and save time.",
-			"- Interact near an ingredient or station to pick up/place items.",
-			"- Throwing can quickly transfer items between chefs when coordinated."
+				"MOVE: W/A/S/D or Arrow Keys — Move your chef around the kitchen.",
+				"INTERACT: V — Pick up or place ingredients, use stations (press near a station).",
+				"DASH: SPACE — Perform a short dash to move faster for a brief moment.",
+				"THROW: K — Throw the item you hold to another chef or into a station.",
+				"\n",
+				"Tips:",
+				"- Use dash to cross gaps or avoid hazards and save time.",
+				"- Interact near an ingredient or station to pick up/place items.",
+				"- Throwing can quickly transfer items between chefs when coordinated."
 		};
 
 		for (String l : lines) {
@@ -180,7 +180,7 @@ public class UI {
 					if (cuttingStation.getContainedItem() != null &&
 							cuttingStation.getSavedTime() > 0) {
 						drawProgressBar(g2, x, y, cuttingStation.getSavedTime(),
-							cuttingStation.getCuttingDurationMs(), new Color(70, 130, 180));
+								cuttingStation.getCuttingDurationMs(), new Color(70, 130, 180));
 					}
 				} else if (station instanceof nimonscooked.entity.station.CookingStation) {
 					nimonscooked.entity.station.CookingStation cookingStation = (nimonscooked.entity.station.CookingStation) station;
@@ -259,7 +259,7 @@ public class UI {
 						g2.setFont(new Font("Monospaced", Font.BOLD, 10));
 						String itemName = c.getInventory().getName();
 						String initial = itemName.length() > 0 ? itemName.substring(0, Math.min(3, itemName.length()))
-							: "?";
+								: "?";
 						g2.drawString(initial, itemX + 4, itemY + 14);
 					}
 				}
@@ -338,41 +338,23 @@ public class UI {
 
 	public void drawOrders(Graphics2D g2) {
 		List<Order> orders = gp.orderManager.getActiveOrders();
+
+		// STAGE TIMER - Top-left corner
+		drawStageTimer(g2);
+
 		if (orders.isEmpty())
 			return;
 
-		int orderWidth = (gp.screenWidth - 10) / Math.max(orders.size(), 1);
-		int orderHeight = gp.topMargin - 4;
-		int startY = 2;
-
-		g2.setColor(new Color(30, 30, 30, 200));
-		g2.fillRect(0, 0, gp.screenWidth, gp.topMargin);
-		g2.setColor(new Color(255, 215, 0, 100));
-		g2.fillRect(0, gp.topMargin - 2, gp.screenWidth, 2);
-
-		int scoreBoxWidth = 150;
-		int scoreBoxX = gp.screenWidth - scoreBoxWidth - 5;
-
-		g2.setColor(new Color(0, 0, 0, 200));
-		g2.fillRoundRect(scoreBoxX, 2, scoreBoxWidth, gp.topMargin - 4, 5, 5);
-
-		g2.setColor(new Color(255, 215, 0));
-		g2.setStroke(new BasicStroke(2));
-		g2.drawRoundRect(scoreBoxX, 2, scoreBoxWidth, gp.topMargin - 4, 5, 5);
-
-		g2.setFont(new Font("SansSerif", Font.BOLD, 12));
-		String scoreText = "SCORE: " + gp.orderManager.getScore();
-		g2.drawString(scoreText, scoreBoxX + 10, 14);
-
-		g2.setFont(new Font("SansSerif", Font.PLAIN, 8));
-		g2.setColor(new Color(100, 255, 100));
-		g2.drawString("✓ " + gp.orderManager.getCompletedOrders(), scoreBoxX + 10, 24);
-		g2.setColor(new Color(255, 100, 100));
-		g2.drawString("✗ " + gp.orderManager.getExpiredOrders(), scoreBoxX + 70, 24);
+		// Order panel - centered at top, leaving space for timer and score
+		int orderWidth = 120;
+		int orderHeight = 50;
+		int orderPanelY = 5; // Top of screen
+		int totalOrderWidth = orders.size() * (orderWidth + 5);
+		int startX = (gp.screenWidth - totalOrderWidth) / 2; // Centered
 
 		for (int i = 0; i < orders.size(); i++) {
 			Order order = orders.get(i);
-			int orderX = i * orderWidth + 2;
+			int orderX = startX + i * (orderWidth + 5);
 
 			float timeRatio = order.getRemainingTime() / order.getDuration();
 			Color indicatorColor;
@@ -385,13 +367,14 @@ public class UI {
 			}
 
 			g2.setColor(new Color(50, 50, 50, 220));
-			g2.fillRect(orderX, startY, orderWidth - 4, orderHeight);
+			g2.fillRoundRect(orderX, orderPanelY, orderWidth, orderHeight, 8, 8);
 
 			g2.setColor(indicatorColor);
-			g2.fillRect(orderX, startY, orderWidth - 4, 2);
+			g2.setStroke(new BasicStroke(3));
+			g2.drawRoundRect(orderX, orderPanelY, orderWidth, orderHeight, 8, 8);
 
-			int textX = orderX + 6;
-			int textY = startY + 11;
+			int textX = orderX + 8;
+			int textY = orderPanelY + 15;
 
 			g2.setColor(Color.WHITE);
 			g2.setFont(new Font("Monospaced", Font.BOLD, 10));
@@ -455,6 +438,27 @@ public class UI {
 	public void drawUI(Graphics2D g2) {
 		int uiHeight = 80;
 		int uiY = gp.screenHeight - uiHeight;
+
+		// SCORE BOX - Bottom-right corner, above chef panel
+		int scoreBoxWidth = 200;
+		int scoreBoxHeight = 35;
+		int scoreBoxX = gp.screenWidth - 210; // Right corner
+		int scoreBoxY = uiY - 40; // Above chef panel
+
+		g2.setColor(new Color(0, 0, 0, 220));
+		g2.fillRoundRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight, 8, 8);
+		g2.setColor(new Color(255, 215, 0));
+		g2.setStroke(new BasicStroke(3));
+		g2.drawRoundRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight, 8, 8);
+
+		g2.setFont(new Font("Monospaced", Font.BOLD, 18));
+		g2.setColor(new Color(255, 215, 0));
+		String scoreText = "SCORE: " + gp.orderManager.getScore();
+		FontMetrics fm = g2.getFontMetrics();
+		int scoreTextWidth = fm.stringWidth(scoreText);
+		g2.drawString(scoreText, scoreBoxX + (scoreBoxWidth - scoreTextWidth) / 2, scoreBoxY + 23);
+
+		// Chef UI Panel - Bottom of screen
 		g2.setColor(new Color(0, 0, 0, 180));
 		g2.fillRect(0, uiY, gp.screenWidth, uiHeight);
 
@@ -502,7 +506,7 @@ public class UI {
 
 				if (chef.getInventory() instanceof nimonscooked.entity.item.ingredient.Ingredient) {
 					nimonscooked.entity.item.ingredient.Ingredient ing = (nimonscooked.entity.item.ingredient.Ingredient) chef
-						.getInventory();
+							.getInventory();
 					g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
 					g2.setColor(new Color(200, 200, 200));
 					g2.drawString(ing.getState().toString(), itemX + itemSize + 8, itemY + 30);
@@ -519,68 +523,144 @@ public class UI {
 		g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, gp.screenHeight - 5);
 	}
 
+	private void drawStageTimer(Graphics2D g2) {
+		// Stage Timer Display - Top-left corner
+		int timerBoxWidth = 120;
+		int timerBoxHeight = 35;
+		int timerBoxX = 5;
+		int timerBoxY = 5;
+
+		float timeRemaining = gp.orderManager.getStageTimeRemaining();
+		String timeText = gp.orderManager.getFormattedStageTime();
+
+		// Color based on time remaining
+		Color timerColor;
+		if (timeRemaining > 90) {
+			timerColor = new Color(100, 255, 100); // Green
+		} else if (timeRemaining > 30) {
+			timerColor = new Color(255, 255, 100); // Yellow
+		} else {
+			timerColor = new Color(255, 100, 100); // Red (urgent)
+		}
+
+		// Draw custom background image if available, otherwise default box
+		if (gp.timerBackground != null) {
+			// Draw custom timer background image
+			g2.drawImage(gp.timerBackground, timerBoxX, timerBoxY, timerBoxWidth, timerBoxHeight, null);
+		} else {
+			// Fallback: Default background box
+			g2.setColor(new Color(0, 0, 0, 220));
+			g2.fillRoundRect(timerBoxX, timerBoxY, timerBoxWidth, timerBoxHeight, 8, 8);
+			g2.setColor(timerColor);
+			g2.setStroke(new BasicStroke(3));
+			g2.drawRoundRect(timerBoxX, timerBoxY, timerBoxWidth, timerBoxHeight, 8, 8);
+		}
+
+		// Timer text (always drawn on top)
+		g2.setFont(new Font("Monospaced", Font.BOLD, 18));
+		g2.setColor(timerColor);
+		FontMetrics fm = g2.getFontMetrics();
+		int textWidth = fm.stringWidth(timeText);
+		g2.drawString(timeText, timerBoxX + (timerBoxWidth - textWidth) / 2, timerBoxY + 23);
+	}
+
 	public void drawGameOverScreen(Graphics2D g2) {
-		BufferedImage background = (gp.gameState == GamePanel.GameState.WIN) ? gp.winScreenBackground : gp.loseScreenBackground;
+		BufferedImage background = (gp.gameState == GamePanel.GameState.WIN) ? gp.winScreenBackground
+				: gp.loseScreenBackground;
 
 		if (background != null) {
+			// Draw background image
 			g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
-			int buttonWidth = 385;
-			int buttonHeight = 70;
+			int buttonWidth = 300;
+			int buttonHeight = 60;
 			int buttonX = (gp.screenWidth - buttonWidth) / 2;
 
-			int tryAgainY = 500;
-			int backY = 600;
+			int tryAgainY = 400;
+			int backY = 480;
 
-			int highlightY = gp.selectedMenuIndex == 0 ? tryAgainY : backY;
-			g2.setColor(new Color(255, 255, 255, 100));
-			g2.fillRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
-			g2.setColor(new Color(255, 255, 255, 200));
-			g2.setStroke(new BasicStroke(4));
-			g2.drawRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
+			// Draw TRY AGAIN button
+			boolean tryAgainSelected = gp.selectedMenuIndex == 0;
 
-			g2.setFont(new Font("Monospaced", Font.BOLD, 36));
+			// Button background box
+			g2.setColor(tryAgainSelected ? new Color(70, 170, 70, 230) : new Color(50, 150, 50, 200));
+			g2.fillRoundRect(buttonX, tryAgainY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button border
+			g2.setColor(tryAgainSelected ? new Color(100, 255, 100) : new Color(80, 200, 80));
+			g2.setStroke(new BasicStroke(tryAgainSelected ? 5 : 3));
+			g2.drawRoundRect(buttonX, tryAgainY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button text
+			g2.setFont(new Font("Monospaced", Font.BOLD, 28));
 			FontMetrics fm = g2.getFontMetrics();
-
-			g2.setColor(gp.selectedMenuIndex == 0 ? new Color(255, 255, 0) : new Color(255, 255, 100));
+			g2.setColor(Color.WHITE);
 			String tryAgainText = "TRY AGAIN";
 			int tryAgainTextWidth = fm.stringWidth(tryAgainText);
-			g2.drawString(tryAgainText, buttonX + (buttonWidth - tryAgainTextWidth) / 2, tryAgainY + 45);
+			g2.drawString(tryAgainText, buttonX + (buttonWidth - tryAgainTextWidth) / 2, tryAgainY + 38);
 
-			g2.setColor(gp.selectedMenuIndex == 1 ? new Color(255, 100, 100) : new Color(255, 150, 150));
+			// Draw BACK TO MENU button
+			boolean backSelected = gp.selectedMenuIndex == 1;
+
+			// Button background box
+			g2.setColor(backSelected ? new Color(120, 120, 120, 230) : new Color(100, 100, 100, 200));
+			g2.fillRoundRect(buttonX, backY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button border
+			g2.setColor(backSelected ? Color.WHITE : new Color(180, 180, 180));
+			g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
+			g2.drawRoundRect(buttonX, backY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button text
+			g2.setColor(Color.WHITE);
 			String backText = "BACK TO MENU";
 			int backTextWidth = fm.stringWidth(backText);
-			g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 45);
+			g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 38);
 
 		} else {
 			g2.setColor(new Color(0, 0, 0, 200));
 			g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
+			// Shift everything up by using offset from top instead of center
+			int startY = 120; // Start from top instead of center
+
 			g2.setFont(new Font("Monospaced", Font.BOLD, 72));
 			String title = (gp.gameState == GamePanel.GameState.WIN) ? "YOU WIN!" : "YOU LOSE!";
-			Color titleColor = (gp.gameState == GamePanel.GameState.WIN) ? new Color(255, 215, 0) : new Color(255, 50, 50);
+			Color titleColor = (gp.gameState == GamePanel.GameState.WIN) ? new Color(255, 215, 0)
+					: new Color(255, 50, 50);
 			g2.setColor(titleColor);
 
 			FontMetrics fm = g2.getFontMetrics();
 			int titleWidth = fm.stringWidth(title);
-			g2.drawString(title, (gp.screenWidth - titleWidth) / 2, gp.screenHeight / 2 - 100);
+			g2.drawString(title, (gp.screenWidth - titleWidth) / 2, startY);
 
+			// Final Score
 			g2.setFont(new Font("Monospaced", Font.PLAIN, 32));
 			String scoreText = "Final Score: " + gp.orderManager.getScore();
 			int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
 			g2.setColor(Color.WHITE);
-			g2.drawString(scoreText, (gp.screenWidth - scoreWidth) / 2, gp.screenHeight / 2 - 20);
+			g2.drawString(scoreText, (gp.screenWidth - scoreWidth) / 2, startY + 80);
 
+			// Time Stats
+			g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
+			String timeText = "Time: " + gp.orderManager.getFormattedStageTime();
+			int timeWidth = g2.getFontMetrics().stringWidth(timeText);
+			Color timeColor = gp.orderManager.isStageTimeUp() ? new Color(255, 100, 100) : new Color(100, 255, 100);
+			g2.setColor(timeColor);
+			g2.drawString(timeText, (gp.screenWidth - timeWidth) / 2, startY + 130);
+
+			// Order Stats
 			g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
 			String statsText = "Completed: " + gp.orderManager.getCompletedOrders() + " | Expired: "
-				+ gp.orderManager.getExpiredOrders();
+					+ gp.orderManager.getExpiredOrders();
 			int statsWidth = g2.getFontMetrics().stringWidth(statsText);
-			g2.drawString(statsText, (gp.screenWidth - statsWidth) / 2, gp.screenHeight / 2 + 30);
+			g2.setColor(Color.WHITE);
+			g2.drawString(statsText, (gp.screenWidth - statsWidth) / 2, startY + 180);
 
 			int buttonWidth = 200;
 			int buttonHeight = 60;
 			int buttonX = (gp.screenWidth - buttonWidth) / 2;
-			int buttonY = gp.screenHeight / 2 + 80;
+			int buttonY = startY + 250;
 			int backButtonY = buttonY + 70;
 
 			boolean tryAgainSelected = gp.selectedMenuIndex == 0;
@@ -617,106 +697,108 @@ public class UI {
 
 	public void drawMainMenu(Graphics2D g2) {
 		// if (gp.menuBackground != null) {
-        final Color PRIM_COLOR = new Color(121,51,51);
-        final Color FILL_COLOR = new Color(251, 237, 198, 220);
-        final int TEXT_PADDING = 12;
+		final Color PRIM_COLOR = new Color(121, 51, 51);
+		final Color FILL_COLOR = new Color(251, 237, 198, 220);
+		final int TEXT_PADDING = 12;
 
-        g2.drawImage(gp.menuBackground,0,0,gp.screenWidth, gp.screenHeight, null);
+		g2.drawImage(gp.menuBackground, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
-        int buttonWidth = 150;
-        int buttonHeight = 45;
-        int gapY = 15;
-        int buttonX = 45;
+		int buttonWidth = 150;
+		int buttonHeight = 45;
+		int gapY = 15;
+		int buttonX = 45;
 
-        int totalMenuHeight = (4*buttonHeight) + (3*gapY);
-        int currentY = 240;
+		int totalMenuHeight = (4 * buttonHeight) + (3 * gapY);
+		int currentY = 240;
 
-        g2.setFont(new Font("daydream", Font.PLAIN, 18));
-        FontMetrics fm = g2.getFontMetrics();
+		g2.setFont(new Font("daydream", Font.PLAIN, 18));
+		FontMetrics fm = g2.getFontMetrics();
 
-        String[] texts = {"START", "CONTROL", "CREDIT", "EXIT"};
+		String[] texts = { "START", "CONTROL", "CREDIT", "EXIT" };
 
-        for(int i = 0; i<texts.length; i++){
-            boolean selected = gp.selectedMenuIndex == i;
-            String text = texts[i];
-            int rectY = currentY;
-            
-            g2.setColor(FILL_COLOR);
-            g2.fillRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15,15);
+		for (int i = 0; i < texts.length; i++) {
+			boolean selected = gp.selectedMenuIndex == i;
+			String text = texts[i];
+			int rectY = currentY;
 
-            g2.setColor(PRIM_COLOR);
-            g2.setStroke(new BasicStroke(selected ? 6:3));
-            g2.drawRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15,15);
-            g2.setColor(PRIM_COLOR);
+			g2.setColor(FILL_COLOR);
+			g2.fillRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15, 15);
 
-            int textX = buttonX + TEXT_PADDING;
-            int textY = currentY+30;
+			g2.setColor(PRIM_COLOR);
+			g2.setStroke(new BasicStroke(selected ? 6 : 3));
+			g2.drawRoundRect(buttonX, rectY, buttonWidth, buttonHeight, 15, 15);
+			g2.setColor(PRIM_COLOR);
 
-            g2.drawString(text, textX, textY);
+			int textX = buttonX + TEXT_PADDING;
+			int textY = currentY + 30;
 
-            if(selected){
-                g2.fillPolygon(new int[]{buttonX-20, buttonX-10, buttonX-20},
-                               new int[]{textY-10, textY, textY+10}, 3
-                );
-            }
-            currentY += buttonHeight + gapY;
-        }
+			g2.drawString(text, textX, textY);
 
+			if (selected) {
+				g2.fillPolygon(new int[] { buttonX - 20, buttonX - 10, buttonX - 20 },
+						new int[] { textY - 10, textY, textY + 10 }, 3);
+			}
+			currentY += buttonHeight + gapY;
+		}
 
 		// } else {
-		// 	g2.setColor(new Color(255, 228, 196));
-		// 	g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+		// g2.setColor(new Color(255, 228, 196));
+		// g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
-		// 	g2.setFont(new Font("Monospaced", Font.BOLD, 80));
-		// 	g2.setColor(new Color(255, 100, 50));
-		// 	String title = "NIMONSCOOKED";
-		// 	int titleWidth = g2.getFontMetrics().stringWidth(title);
-		// 	g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 150);
+		// g2.setFont(new Font("Monospaced", Font.BOLD, 80));
+		// g2.setColor(new Color(255, 100, 50));
+		// String title = "NIMONSCOOKED";
+		// int titleWidth = g2.getFontMetrics().stringWidth(title);
+		// g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 150);
 
-		// 	g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
-		// 	g2.setColor(new Color(100, 100, 100));
-		// 	String subtitle = "Kelompok N - OOP Project";
-		// 	int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
-		// 	g2.drawString(subtitle, (gp.screenWidth - subtitleWidth) / 2, 190);
+		// g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
+		// g2.setColor(new Color(100, 100, 100));
+		// String subtitle = "Kelompok N - OOP Project";
+		// int subtitleWidth = g2.getFontMetrics().stringWidth(subtitle);
+		// g2.drawString(subtitle, (gp.screenWidth - subtitleWidth) / 2, 190);
 
-		// 	int buttonWidth = 300;
-		// 	int buttonHeight = 60;
-		// 	int buttonX = (gp.screenWidth - buttonWidth) / 2;
-		// 	int startY = 280;
-		// 	int spacing = 80;
+		// int buttonWidth = 300;
+		// int buttonHeight = 60;
+		// int buttonX = (gp.screenWidth - buttonWidth) / 2;
+		// int startY = 280;
+		// int spacing = 80;
 
-		// 	boolean startSelected = gp.selectedMenuIndex == 0;
-		// 	g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
-		// 	g2.fillRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
-		// 	g2.setColor(Color.WHITE);
-		// 	g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
-		// 	g2.drawRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
-		// 	g2.setFont(new Font("Arial", Font.BOLD, 32));
-		// 	String startText = "Start Game";
-		// 	int startTextWidth = g2.getFontMetrics().stringWidth(startText);
-		// 	g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY + 40);
+		// boolean startSelected = gp.selectedMenuIndex == 0;
+		// g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
+		// g2.fillRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
+		// g2.setColor(Color.WHITE);
+		// g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
+		// g2.drawRoundRect(buttonX, startY, buttonWidth, buttonHeight, 20, 20);
+		// g2.setFont(new Font("Arial", Font.BOLD, 32));
+		// String startText = "Start Game";
+		// int startTextWidth = g2.getFontMetrics().stringWidth(startText);
+		// g2.drawString(startText, buttonX + (buttonWidth - startTextWidth) / 2, startY
+		// + 40);
 
-		// 	int howToPlayY = startY + spacing;
-		// 	boolean howToPlaySelected = gp.selectedMenuIndex == 1;
-		// 	g2.setColor(howToPlaySelected ? new Color(50, 164, 255) : new Color(30, 144, 255));
-		// 	g2.fillRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
-		// 	g2.setColor(Color.WHITE);
-		// 	g2.setStroke(new BasicStroke(howToPlaySelected ? 5 : 3));
-		// 	g2.drawRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
-		// 	String howToPlayText = "How to Play";
-		// 	int howToPlayTextWidth = g2.getFontMetrics().stringWidth(howToPlayText);
-		// 	g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) / 2, howToPlayY + 40);
+		// int howToPlayY = startY + spacing;
+		// boolean howToPlaySelected = gp.selectedMenuIndex == 1;
+		// g2.setColor(howToPlaySelected ? new Color(50, 164, 255) : new Color(30, 144,
+		// 255));
+		// g2.fillRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
+		// g2.setColor(Color.WHITE);
+		// g2.setStroke(new BasicStroke(howToPlaySelected ? 5 : 3));
+		// g2.drawRoundRect(buttonX, howToPlayY, buttonWidth, buttonHeight, 20, 20);
+		// String howToPlayText = "How to Play";
+		// int howToPlayTextWidth = g2.getFontMetrics().stringWidth(howToPlayText);
+		// g2.drawString(howToPlayText, buttonX + (buttonWidth - howToPlayTextWidth) /
+		// 2, howToPlayY + 40);
 
-		// 	int exitY = howToPlayY + spacing;
-		// 	boolean exitSelected = gp.selectedMenuIndex == 2;
-		// 	g2.setColor(exitSelected ? new Color(240, 40, 80) : new Color(220, 20, 60));
-		// 	g2.fillRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
-		// 	g2.setColor(Color.WHITE);
-		// 	g2.setStroke(new BasicStroke(exitSelected ? 5 : 3));
-		// 	g2.drawRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
-		// 	String exitText = "Exit";
-		// 	int exitTextWidth = g2.getFontMetrics().stringWidth(exitText);
-		// 	g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY + 40);
+		// int exitY = howToPlayY + spacing;
+		// boolean exitSelected = gp.selectedMenuIndex == 2;
+		// g2.setColor(exitSelected ? new Color(240, 40, 80) : new Color(220, 20, 60));
+		// g2.fillRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
+		// g2.setColor(Color.WHITE);
+		// g2.setStroke(new BasicStroke(exitSelected ? 5 : 3));
+		// g2.drawRoundRect(buttonX, exitY, buttonWidth, buttonHeight, 20, 20);
+		// String exitText = "Exit";
+		// int exitTextWidth = g2.getFontMetrics().stringWidth(exitText);
+		// g2.drawString(exitText, buttonX + (buttonWidth - exitTextWidth) / 2, exitY +
+		// 40);
 		// }
 
 		// g2.setColor(Color.WHITE);
@@ -742,23 +824,23 @@ public class UI {
 		int lineHeight = 35;
 
 		String[] instructions = {
-			"Controls:",
-			"  WASD - Move your chef",
-			"  V - Interact (pick/place/use items)",
-			"  C - Drop item",
-			"  B - Switch between chefs",
-			"  F - Serve order from plate",
-			"  X - Trash item",
-			"",
-			"Objective:",
-			"  • Prepare orders correctly and quickly",
-			"  • Complete 2 orders to WIN",
-			"  • Score drops to -10: GAME OVER",
-			"",
-			"Tips:",
-			"  • Raw ingredients need preparation",
-			"  • Watch cooking times to avoid burning",
-			"  • Complete orders before timer expires"
+				"Controls:",
+				"  WASD - Move your chef",
+				"  V - Interact (pick/place/use items)",
+				"  C - Drop item",
+				"  B - Switch between chefs",
+				"  F - Serve order from plate",
+				"  X - Trash item",
+				"",
+				"Objective:",
+				"  • Prepare orders correctly and quickly",
+				"  • Complete 1 order to WIN",
+				"  • Score drops to -10: GAME OVER",
+				"",
+				"Tips:",
+				"  • Raw ingredients need preparation",
+				"  • Watch cooking times to avoid burning",
+				"  • Complete orders before timer expires"
 		};
 
 		for (int i = 0; i < instructions.length; i++) {
@@ -773,65 +855,51 @@ public class UI {
 	}
 
 	public void drawStageSelect(Graphics2D g2) {
-		g2.setColor(new Color(255, 250, 205));
-		g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
-
-		g2.setFont(new Font("Arial", Font.BOLD, 56));
-		g2.setColor(new Color(255, 140, 0));
-		String title = "Select Stage";
-		int titleWidth = g2.getFontMetrics().stringWidth(title);
-		g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 100);
-
-		g2.setFont(new Font("Arial", Font.PLAIN, 24));
-		g2.setColor(Color.BLACK);
-		String[] info = {
-			"Map: C - Burger Kitchen",
-			"Win: Complete 2 orders",
-			"Lose: Score drops to -10",
-			"Recipes: Classic, Cheeseburger, BLT, Deluxe"
-		};
-
-		int infoY = 200;
-		for (int i = 0; i < info.length; i++) {
-			int infoWidth = g2.getFontMetrics().stringWidth(info[i]);
-			g2.drawString(info[i], (gp.screenWidth - infoWidth) / 2, infoY + i * 40);
+		// Draw full screen map thumbnail as background
+		if (gp.mapCThumbnail != null) {
+			g2.drawImage(gp.mapCThumbnail, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		} else if (gp.stageSelectBackground != null) {
+			g2.drawImage(gp.stageSelectBackground, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		} else {
+			// Fallback to solid color
+			g2.setColor(new Color(255, 250, 205));
+			g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 		}
 
-		int buttonWidth = 250;
-		int buttonHeight = 60;
-		int buttonX = (gp.screenWidth - buttonWidth) / 2;
-		int selectY = 380;
-		int backY = selectY + 80;
+		// 2 HORIZONTAL BUTTONS at bottom
+		int buttonWidth = 180;
+		int buttonHeight = 55;
+		int buttonSpacing = 40;
+		int totalWidth = (buttonWidth * 2) + buttonSpacing;
+		int startX = (gp.screenWidth - totalWidth) / 2;
+		int buttonY = gp.screenHeight - 150; // Position near bottom
 
+		// START Button (Left)
+		int startButtonX = startX;
 		boolean startSelected = gp.selectedMenuIndex == 0;
 		g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
-		g2.fillRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
+		g2.fillRoundRect(startButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
 		g2.setColor(Color.WHITE);
 		g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
-		g2.drawRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
-
-		g2.setFont(new Font("Arial", Font.BOLD, 32));
-		String selectText = "START!";
-		int selectTextWidth = g2.getFontMetrics().stringWidth(selectText);
-		g2.drawString(selectText, buttonX + (buttonWidth - selectTextWidth) / 2, selectY + 40);
-
-		boolean backSelected = gp.selectedMenuIndex == 1;
-		g2.setColor(backSelected ? new Color(120, 120, 120) : new Color(100, 100, 100));
-		g2.fillRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
-		g2.setColor(Color.WHITE);
-		g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
-		g2.drawRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
+		g2.drawRoundRect(startButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
 
 		g2.setFont(new Font("Arial", Font.BOLD, 28));
-		String backText = "Back";
-		int backTextWidth = g2.getFontMetrics().stringWidth(backText);
-		g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 38);
+		String startText = "START";
+		int startTextWidth = g2.getFontMetrics().stringWidth(startText);
+		g2.drawString(startText, startButtonX + (buttonWidth - startTextWidth) / 2, buttonY + 38);
 
-		g2.setColor(Color.BLACK);
-		g2.setFont(new Font("Arial", Font.PLAIN, 18));
-		String hint = "Use W/S to navigate | ENTER/SPACE to select | ESC to go back";
-		int hintWidth = g2.getFontMetrics().stringWidth(hint);
-		g2.drawString(hint, (gp.screenWidth - hintWidth) / 2, gp.screenHeight - 30);
+		// BACK Button (Right)
+		int backButtonX = startX + buttonWidth + buttonSpacing;
+		boolean backSelected = gp.selectedMenuIndex == 1;
+		g2.setColor(backSelected ? new Color(180, 120, 120) : new Color(150, 100, 100));
+		g2.fillRoundRect(backButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
+		g2.setColor(Color.WHITE);
+		g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
+		g2.drawRoundRect(backButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
+
+		g2.setFont(new Font("Arial", Font.BOLD, 28));
+		String backText = "BACK";
+		int backTextWidth = g2.getFontMetrics().stringWidth(backText);
+		g2.drawString(backText, backButtonX + (buttonWidth - backTextWidth) / 2, buttonY + 38);
 	}
 }
-
