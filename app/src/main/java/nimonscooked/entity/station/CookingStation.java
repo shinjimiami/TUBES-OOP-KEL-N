@@ -131,10 +131,7 @@ public class CookingStation extends Station {
         CookingDevice device = (CookingDevice) getContainedItem();
         Preparable item = device.getFirstIngredient();
 
-        if (item == null) {
-            System.out.println("[COOKING] Cooking device is empty");
-            return;
-        }
+
 
         if(!item.canBeCooked()){
             System.out.println("[COOKING] Item cannot be cooked");

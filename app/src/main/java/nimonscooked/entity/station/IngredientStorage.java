@@ -16,6 +16,7 @@ import nimonscooked.enums.IngredientState;
 // ingredient ini bersifat unlimited
 public class IngredientStorage extends Station {
     private final IngredientType type;
+    private long lastTakenTime = 0; // timestamp when an ingredient was last taken (for UI feedback)
 
     public IngredientStorage(GamePanel gp, IngredientType type) {
         super(gp);
@@ -34,6 +35,22 @@ public class IngredientStorage extends Station {
         }
     }
 
+    // cache representative sprite to avoid recreating ingredients repeatedly
+    private transient java.awt.image.BufferedImage representativeSprite = null;
+
+    private java.awt.image.BufferedImage loadRepresentativeSprite() {
+        if (representativeSprite != null)
+            return representativeSprite;
+        try {
+            nimonscooked.entity.item.ingredient.Ingredient sample = creteIngredientByType(this.gp, this.type);
+            if (sample != null) {
+                representativeSprite = sample.getSprite();
+            }
+        } catch (Exception ignored) {
+        }
+        return representativeSprite;
+    }
+
     @Override
     public void interact(Chef player) {
         Item heldItem = player.getInventory();
@@ -44,6 +61,7 @@ public class IngredientStorage extends Station {
 
             if (newIngredient != null) {
                 player.setInventory(newIngredient);
+                this.lastTakenTime = System.currentTimeMillis();
                 System.out.println("[STORAGE] take" + this.type);
             } else {
                 System.out.println("[STORAGE] failed to take new ingredient");
@@ -71,5 +89,19 @@ public class IngredientStorage extends Station {
             default:
                 return null;
         }
+    }
+
+    // For UI: expose ingredient type and last-taken timestamp
+    public IngredientType getIngredientType() {
+        return this.type;
+    }
+
+    public long getLastTakenTime() {
+        return this.lastTakenTime;
+    }
+
+    // Provide a representative sprite for the storage (for overlay)
+    public java.awt.image.BufferedImage getRepresentativeSprite() {
+        return loadRepresentativeSprite();
     }
 }
