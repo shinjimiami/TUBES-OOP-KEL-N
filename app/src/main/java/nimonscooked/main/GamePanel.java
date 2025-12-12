@@ -32,6 +32,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     final int screenHeight = topMargin + mapHeight + bottomMargin;
 
     Thread gameThread;
+    // Performance / debug toggles
+    private static final int TARGET_FPS = 30; // lower FPS to reduce CPU/GPU usage
+    private static final boolean ENABLE_DEBUG_OUTPUT = false; // set true to re-enable System.out/err logs
     KeyHandler keyHandler;
     AssetSetter assetSetter;
     UI ui;
@@ -86,6 +89,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private final long orderInterval = 30000; // Generate order every 30 seconds
     private int frameCounter = 0;
 
+    // Asset / initialization state
+    private volatile boolean assetsLoaded = false;
+
     public Sound sound = new Sound(); // <- SUDAH ADA
 
     /*
@@ -127,12 +133,41 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         keyHandler = new KeyHandler(gameMap, this, chefs);
         orderManager = OrderManager.getInstance();
 
-        // Initialize helpers
+        // Initialize helpers (heavy work moved to background thread to avoid EDT blocking)
         assetSetter = new AssetSetter(this);
-        assetSetter.setAssets();
-        setupGame = new SetupGame(this);
-        collisionChecker = new CollisionChecker();
-        ui = new UI(this);
+
+        // Perform asset loading and game setup off the EDT to avoid UI freezes.
+        new Thread(() -> {
+            try {
+                assetSetter.setAssets();
+                // initialize station images/sizes using this GamePanel to avoid lazy IO during render
+                gameMap.initializeStationsWithGamePanel(this);
+                setupGame = new SetupGame(this);
+                // Initialize game entities and place default items (pans on cooking stations)
+                setupGame.resetGame();
+                collisionChecker = new CollisionChecker();
+                ui = new UI(this);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            } finally {
+                assetsLoaded = true;
+                // trigger a repaint so UI updates once loaded
+                repaint();
+                // Start/restore music for current state
+                playMusicByState();
+            }
+        }, "Asset-Loader").start();
+
+        // Optionally silence verbose console output for performance
+        if (!ENABLE_DEBUG_OUTPUT) {
+            java.io.OutputStream nullOut = new java.io.OutputStream() {
+                @Override
+                public void write(int b) {
+                }
+            };
+            System.setOut(new java.io.PrintStream(nullOut));
+            System.setErr(new java.io.PrintStream(nullOut));
+        }
 
         // Memulai musik awal
         playMusicByState();
@@ -186,7 +221,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             update();
             repaint();
             try {
-                Thread.sleep(1000 / 60);
+                Thread.sleep(1000 / TARGET_FPS);
             } catch (Exception e) {
             }
         }
@@ -195,6 +230,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void update() {
         // Only update game logic if playing
         if (gameState != GameState.PLAYING) {
+            return;
+        }
+
+        // Don't run game logic until assets and setup are loaded
+        if (!assetsLoaded) {
             return;
         }
 
@@ -208,7 +248,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         // Update stations (for cooking/cutting timers)
         frameCounter++;
-        if (frameCounter % 60 == 0) { // Update every second
+        if (frameCounter % TARGET_FPS == 0) { // Update roughly every second (TARGET_FPS frames)
             updateStations();
         }
 
@@ -293,6 +333,19 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        // If assets are still loading, show a simple loading overlay and return.
+        if (!assetsLoaded) {
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 24));
+            String txt = "Loading assets... please wait";
+            int w = g2.getFontMetrics().stringWidth(txt);
+            g2.drawString(txt, Math.max(10, (getWidth() - w) / 2), getHeight() / 2);
+            g2.dispose();
+            return;
+        }
 
         // Route rendering based on game state
         switch (gameState) {

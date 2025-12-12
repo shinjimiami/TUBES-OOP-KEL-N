@@ -22,7 +22,7 @@ public class Sound {
     Clip clip;
     ArrayList<URL> soundURL = new ArrayList<>();
     FloatControl volumeControl;
-    private float currentVolume = 0.5f;
+    private float currentVolume = 0.8f;
 
     public Sound(){
         soundURL.add(getClass().getResource("/sound/chopping.wav")); // 0
@@ -36,10 +36,9 @@ public class Sound {
         soundURL.add(getClass().getResource("/sound/washing.wav")); // 8
     }
 
-    // --- METODE KUNCI YANG DIREVISI: Mencegah sound doubling dan NullPointerException ---
     public void setFile(int i) {
         try {
-            // 1. Pastikan clip yang lama dihentikan dan ditutup
+            // Pastikan clip yang lama dihentikan dan ditutup
             if (clip != null && clip.isOpen()) {
                 clip.stop();
                 clip.close();
@@ -49,7 +48,7 @@ public class Sound {
             clip = AudioSystem.getClip();
             clip.open(ais);
 
-            // 2. Inisialisasi volume control
+            // Inisialisasi volume control
             if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 volumeControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
                 setVolume(currentVolume);
@@ -76,7 +75,6 @@ public class Sound {
     }
 
     public void stop() {
-        // --- DIREVISI: Memperbaiki NullPointerException ---
         if (clip != null && clip.isRunning()) {
             clip.stop();
         }

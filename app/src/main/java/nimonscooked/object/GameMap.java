@@ -1,7 +1,6 @@
 package nimonscooked.object;
 
 import nimonscooked.entity.station.*;
-import nimonscooked.entity.station.KitchenUtensilStorage;
 import nimonscooked.enums.IngredientType;
 import nimonscooked.entity.item.Item;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class GameMap {
         // M=Meat, B=Bun, H=Cheese, L=Lettuce, O=Tomato, F=FryingPan, P=Plate
         grid = new char[][] {
                 { 'X', 'X', 'X', 'X', 'X', 'A', 'A', 'O', 'A', 'A', 'X', 'X', 'X', 'X' },
-                { 'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'F' },
+                { 'C', '.', '.', 'X', 'X', 'A', '.', '.', '.', 'A', 'X', '.', '.', 'A' },
                 { 'M', '.', '.', 'X', 'X', 'R', 'V', '.', '.', 'R', 'X', '.', '.', 'P' },
                 { 'C', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
                 { 'B', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'S' },
@@ -36,6 +35,38 @@ public class GameMap {
 
         // Inisialisasi Objek Station Berdasarkan Grid
         initializeStations();
+    }
+
+    /**
+     * Recreate station objects using the real GamePanel instance so station images
+     * and sizes are initialized with proper `gp` (avoids lazy loading during render).
+     */
+    public void initializeStationsWithGamePanel(nimonscooked.main.GamePanel gp) {
+        if (stationGrid == null) {
+            stationGrid = new Station[rows][cols];
+        }
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                char tile = grid[y][x];
+                switch (tile) {
+                    case 'C' -> stationGrid[y][x] = new nimonscooked.entity.station.CuttingStation(gp);
+                    case 'R' -> stationGrid[y][x] = new nimonscooked.entity.station.CookingStation(gp);
+                    case 'W' -> stationGrid[y][x] = new nimonscooked.entity.station.WashingStation(gp);
+                    case 'S' -> stationGrid[y][x] = new nimonscooked.entity.station.ServingCounter(gp, null);
+                    case 'M' -> stationGrid[y][x] = new nimonscooked.entity.station.IngredientStorage(gp, nimonscooked.enums.IngredientType.MEAT);
+                    case 'B' -> stationGrid[y][x] = new nimonscooked.entity.station.IngredientStorage(gp, nimonscooked.enums.IngredientType.BUN);
+                    case 'H' -> stationGrid[y][x] = new nimonscooked.entity.station.IngredientStorage(gp, nimonscooked.enums.IngredientType.CHEESE);
+                    case 'L' -> stationGrid[y][x] = new nimonscooked.entity.station.IngredientStorage(gp, nimonscooked.enums.IngredientType.LETTUCE);
+                    case 'O' -> stationGrid[y][x] = new nimonscooked.entity.station.IngredientStorage(gp, nimonscooked.enums.IngredientType.TOMATO);
+                    case 'P' -> stationGrid[y][x] = new nimonscooked.entity.station.PlateStorage(gp);
+                    case 'F' -> stationGrid[y][x] = null; // KitchenUtensilStorage init skipped to avoid compile dependency
+                    case 'T' -> stationGrid[y][x] = new nimonscooked.entity.station.TrashStation(gp);
+                    case 'A' -> stationGrid[y][x] = new nimonscooked.entity.station.AssemblyStation(gp);
+                    default -> stationGrid[y][x] = null;
+                }
+            }
+        }
     }
 
     private void initializeStations() {
@@ -59,7 +90,6 @@ public class GameMap {
                     case 'L' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.LETTUCE);
                     case 'O' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.TOMATO);
                     case 'P' -> stationGrid[y][x] = new PlateStorage(null);
-                    case 'F' -> stationGrid[y][x] = new KitchenUtensilStorage(null); // FryingPan storage
                     case 'T' -> stationGrid[y][x] = new TrashStation(null);
                     case 'A' -> stationGrid[y][x] = new AssemblyStation(null);
                     // '.' (Lantai), 'X' (Tembok), 'V' (Spawn) tidak punya objek station

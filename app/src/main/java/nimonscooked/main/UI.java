@@ -6,6 +6,9 @@ import java.util.List;
 
 import nimonscooked.entity.Chef;
 import nimonscooked.entity.order.Order;
+import nimonscooked.entity.item.Item;
+import nimonscooked.entity.station.PlateStorage;
+import nimonscooked.entity.station.IngredientStorage;
 
 public class UI {
 	GamePanel gp;
@@ -198,6 +201,55 @@ public class UI {
 							float progress = cookingStation.getCookingProgress();
 							Color barColor = progress < 0.8f ? new Color(255, 165, 0) : new Color(255, 69, 0);
 							drawProgressBar(g2, x, y, (int) (progress * 100), 100, barColor);
+						}
+					}
+				}
+
+				// Generic: draw contained item on top of station if present
+				if (station != null) {
+					Item contained = station.getContainedItem();
+					if (contained != null) {
+						BufferedImage sprite = contained.getSprite();
+						if (sprite != null) {
+							int size = gp.tileSize - 16;
+							g2.drawImage(sprite, x + 8, y + 8, size, size, null);
+						} else {
+							g2.setColor(new Color(200, 200, 200));
+							g2.fillOval(x + 12, y + 12, gp.tileSize - 24, gp.tileSize - 24);
+						}
+					}
+
+					// If this is a PlateStorage, render the remaining count badge
+					if (station instanceof PlateStorage) {
+						PlateStorage ps = (PlateStorage) station;
+						int count = ps.getCount();
+						g2.setColor(new Color(0, 0, 0, 180));
+						g2.fillRoundRect(x + gp.tileSize - 28, y + 4, 24, 18, 6, 6);
+						g2.setColor(new Color(255, 215, 0));
+						g2.setFont(new Font("Monospaced", Font.BOLD, 12));
+						String txt = String.valueOf(count);
+						int tw = g2.getFontMetrics().stringWidth(txt);
+						g2.drawString(txt, x + gp.tileSize - 28 + (24 - tw) / 2, y + 16);
+					}
+					// If this is an IngredientStorage, render representative ingredient and recent-taken indicator
+					if (station instanceof IngredientStorage) {
+						IngredientStorage is = (IngredientStorage) station;
+						BufferedImage rep = is.getRepresentativeSprite();
+						if (rep != null) {
+							int size = gp.tileSize / 2;
+							g2.drawImage(rep, x + 8, y + 8, size, size, null);
+						}
+
+						long last = is.getLastTakenTime();
+						if (last > 0 && System.currentTimeMillis() - last < 1500) {
+							// show small "-1" badge to indicate a recent pickup
+							g2.setColor(new Color(0, 0, 0, 180));
+							g2.fillRoundRect(x + gp.tileSize - 36, y + 4, 32, 18, 6, 6);
+							g2.setColor(new Color(255, 80, 80));
+							g2.setFont(new Font("Monospaced", Font.BOLD, 12));
+							String txt = "-1";
+							int tw = g2.getFontMetrics().stringWidth(txt);
+							g2.drawString(txt, x + gp.tileSize - 36 + (32 - tw) / 2, y + 16);
 						}
 					}
 				}

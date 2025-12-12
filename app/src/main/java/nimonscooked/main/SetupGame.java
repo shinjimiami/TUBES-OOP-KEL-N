@@ -1,6 +1,11 @@
 package nimonscooked.main;
 
 import nimonscooked.entity.Chef;
+<<<<<<< Updated upstream
+=======
+import nimonscooked.entity.item.kitchenutensil.FryingPan;
+import nimonscooked.entity.station.CookingStation;
+>>>>>>> Stashed changes
 import nimonscooked.entity.station.Station;
 
 public class SetupGame {
@@ -51,6 +56,36 @@ public class SetupGame {
         gp.orderManager.generateOrder();
         gp.lastOrderTime = System.currentTimeMillis();
 
+<<<<<<< Updated upstream
         System.out.println("[SETUP] Game reset complete - stations cleared, timer restarted");
+=======
+        // Ensure every CookingStation has exactly one FryingPan (spawn default pans there)
+        int placed = 0;
+        for (int row = 0; row < gp.gameMap.getRows(); row++) {
+            for (int col = 0; col < gp.gameMap.getCols(); col++) {
+                Station s = gp.gameMap.getStationAt(col, row);
+                if (s instanceof CookingStation) {
+                    // If station already has a FryingPan, count it and continue
+                    if (s.getContainedItem() instanceof FryingPan) {
+                        placed++;
+                        continue;
+                    }
+
+                    // Remove any non-pan item
+                    if (s.getContainedItem() != null) {
+                        s.takeItem();
+                    }
+
+                    // Place new pan
+                    FryingPan pan = new FryingPan(gp);
+                    s.placeItem(pan);
+                    placed++;
+                    System.out.println("[SETUP] Placed FryingPan on cooking station at (" + col + "," + row + ")");
+                }
+            }
+        }
+
+        System.out.println("[SETUP] Game reset complete - placed pans: " + placed);
+>>>>>>> Stashed changes
     }
 }
