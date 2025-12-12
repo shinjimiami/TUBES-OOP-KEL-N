@@ -5,13 +5,19 @@ import nimonscooked.entity.order.Order;
 import nimonscooked.entity.order.Recipe;
 import nimonscooked.enums.IngredientState;
 import nimonscooked.interfaces.Preparable;
+import nimonscooked.interfaces.GameObserver;
+import nimonscooked.interfaces.GameSubject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList; // Thread-safe list
 
-public class OrderManager {
+/**
+ * SINGLETON PATTERN: OrderManager (only one instance)
+ * OBSERVER PATTERN: Implements GameSubject to notify observers
+ */
+public class OrderManager implements GameSubject {
     private static OrderManager instance;
 
     // Gunakan CopyOnWriteArrayList untuk mencegah error saat menghapus order di
@@ -31,6 +37,9 @@ public class OrderManager {
     private final float STAGE_DURATION = 180f;
     private boolean stageTimerRunning = false;
 
+    // OBSERVER PATTERN: List of observers
+    private List<GameObserver> observers = new ArrayList<>();
+
     private OrderManager() {
         initBurgerRecipes();
     }
@@ -40,6 +49,31 @@ public class OrderManager {
             instance = new OrderManager();
         }
         return instance;
+    }
+
+    // OBSERVER PATTERN: Add observer
+    @Override
+    public void addObserver(GameObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+            System.out.println("[ORDER MANAGER] Observer added");
+        }
+    }
+
+    // OBSERVER PATTERN: Remove observer
+    @Override
+    public void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+        System.out.println("[ORDER MANAGER] Observer removed");
+    }
+
+    // OBSERVER PATTERN: Notify all observers
+    @Override
+    public void notifyObservers() {
+        for (GameObserver observer : observers) {
+            observer.onScoreChanged(score);
+            observer.onTimeUpdate(stageTimeRemaining);
+        }
     }
 
     // Definisi Resep Sesuai Map Type C
@@ -89,6 +123,8 @@ public class OrderManager {
             if (stageTimeRemaining < 0) {
                 stageTimeRemaining = 0;
             }
+            // Notify observers of time update
+            notifyObservers();
         }
 
         // Update order timers
@@ -100,6 +136,12 @@ public class OrderManager {
                 System.out.println("[ORDER] ORDER EXPIRED: " + o.getRecipe().getName() + " (-10 points)");
                 score -= 10; // Allow negative score for lose condition
                 System.out.println("[ORDER] New score: " + score);
+
+                // OBSERVER PATTERN: Notify observers of order expiration
+                for (GameObserver observer : observers) {
+                    observer.onOrderExpired(-10);
+                }
+                notifyObservers();
             }
         }
     }
@@ -119,6 +161,13 @@ public class OrderManager {
                 System.out.println("ORDER COMPLETED: " + order.getRecipe().getName()
                         + " +\" + earnedScore + \" points! Total: " + score);
                 activeOrders.remove(order); // Hapus order yang selesai
+
+                // OBSERVER PATTERN: Notify observers of order completion
+                for (GameObserver observer : observers) {
+                    observer.onOrderCompleted(earnedScore);
+                }
+                notifyObservers();
+
                 return true;
             }
         }
