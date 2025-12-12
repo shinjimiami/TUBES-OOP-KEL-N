@@ -576,8 +576,8 @@ public class UI {
 			int buttonHeight = 60;
 			int buttonX = (gp.screenWidth - buttonWidth) / 2;
 
-			int tryAgainY = 500;
-			int backY = 580;
+			int tryAgainY = 400;
+			int backY = 480;
 
 			// Draw TRY AGAIN button
 			boolean tryAgainSelected = gp.selectedMenuIndex == 0;
@@ -621,6 +621,9 @@ public class UI {
 			g2.setColor(new Color(0, 0, 0, 200));
 			g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
+			// Shift everything up by using offset from top instead of center
+			int startY = 120; // Start from top instead of center
+
 			g2.setFont(new Font("Monospaced", Font.BOLD, 72));
 			String title = (gp.gameState == GamePanel.GameState.WIN) ? "YOU WIN!" : "YOU LOSE!";
 			Color titleColor = (gp.gameState == GamePanel.GameState.WIN) ? new Color(255, 215, 0)
@@ -629,14 +632,14 @@ public class UI {
 
 			FontMetrics fm = g2.getFontMetrics();
 			int titleWidth = fm.stringWidth(title);
-			g2.drawString(title, (gp.screenWidth - titleWidth) / 2, gp.screenHeight / 2 - 150);
+			g2.drawString(title, (gp.screenWidth - titleWidth) / 2, startY);
 
 			// Final Score
 			g2.setFont(new Font("Monospaced", Font.PLAIN, 32));
 			String scoreText = "Final Score: " + gp.orderManager.getScore();
 			int scoreWidth = g2.getFontMetrics().stringWidth(scoreText);
 			g2.setColor(Color.WHITE);
-			g2.drawString(scoreText, (gp.screenWidth - scoreWidth) / 2, gp.screenHeight / 2 - 80);
+			g2.drawString(scoreText, (gp.screenWidth - scoreWidth) / 2, startY + 80);
 
 			// Time Stats
 			g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
@@ -644,7 +647,7 @@ public class UI {
 			int timeWidth = g2.getFontMetrics().stringWidth(timeText);
 			Color timeColor = gp.orderManager.isStageTimeUp() ? new Color(255, 100, 100) : new Color(100, 255, 100);
 			g2.setColor(timeColor);
-			g2.drawString(timeText, (gp.screenWidth - timeWidth) / 2, gp.screenHeight / 2 - 40);
+			g2.drawString(timeText, (gp.screenWidth - timeWidth) / 2, startY + 130);
 
 			// Order Stats
 			g2.setFont(new Font("Monospaced", Font.PLAIN, 24));
@@ -652,12 +655,12 @@ public class UI {
 					+ gp.orderManager.getExpiredOrders();
 			int statsWidth = g2.getFontMetrics().stringWidth(statsText);
 			g2.setColor(Color.WHITE);
-			g2.drawString(statsText, (gp.screenWidth - statsWidth) / 2, gp.screenHeight / 2 + 10);
+			g2.drawString(statsText, (gp.screenWidth - statsWidth) / 2, startY + 180);
 
 			int buttonWidth = 200;
 			int buttonHeight = 60;
 			int buttonX = (gp.screenWidth - buttonWidth) / 2;
-			int buttonY = gp.screenHeight / 2 + 80;
+			int buttonY = startY + 250;
 			int backButtonY = buttonY + 70;
 
 			boolean tryAgainSelected = gp.selectedMenuIndex == 0;
