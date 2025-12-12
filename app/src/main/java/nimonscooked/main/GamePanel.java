@@ -1,4 +1,5 @@
 package nimonscooked.main;
+
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -69,6 +70,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private final long orderInterval = 30000; // Generate order every 30 seconds
     private int frameCounter = 0;
 
+    public Sound sound = new Sound(); // <- SUDAH ADA
+
     // Game state management
     enum GameState {
         MENU, // Main menu
@@ -106,6 +109,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         setupGame = new SetupGame(this);
         collisionChecker = new CollisionChecker();
         ui = new UI(this);
+
+        // --- INTEGRASI SOUND: Memulai musik awal ---
+        playMusicByState();
     }
 
     // Asset loading moved to AssetSetter
@@ -205,9 +211,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             gameState = GameState.WIN;
             System.out
                     .println("[GAME] YOU WIN! Completed " + completedOrders + " orders! Final Score: " + currentScore);
+            // --- INTEGRASI SOUND: Win state ---
+            playMusicByState();
         } else if (currentScore <= LOSE_SCORE) {
             gameState = GameState.LOSE;
             System.out.println("[GAME] YOU LOSE! Final Score: " + currentScore);
+            // --- INTEGRASI SOUND: Lose state ---
+            playMusicByState();
         }
     }
 
@@ -230,6 +240,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     // Auto-start cooking jika ada item dan belum cooking
                     if (!cookingStation.isCooking() && cookingStation.getContainedItem() != null) {
                         cookingStation.startCooking(currentTime);
+                        // Anda bisa memanggil sound FRY di sini jika ingin bunyi langsung
+                        // playSoundEffect(Sound.FRY);
                     }
                     cookingStation.update(currentTime);
                 }
@@ -267,6 +279,34 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         }
 
         g2.dispose();
+    }
+
+    public void playMusicByState() {
+        // Stop any currently playing music before changing
+        sound.stop();
+
+        switch (gameState) {
+            case MENU:
+                sound.playMusic(Sound.TITLE);
+                break;
+            case PLAYING:
+                sound.playMusic(Sound.PLAYING);
+                break;
+            case WIN:
+                sound.playSE(Sound.VICTORY);
+                break;
+            case LOSE:
+                sound.playSE(Sound.GAME_OVER);
+                break;
+            case HOW_TO_PLAY:
+            case STAGE_SELECT:
+                sound.playMusic(Sound.LEVEL);
+                break;
+        }
+    }
+
+    public void playSoundEffect(int index) {
+        sound.playSE(index);
     }
 
     private void drawGame(Graphics2D g2) {
@@ -328,21 +368,26 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 selectedMenuIndex--;
                 if (selectedMenuIndex < 0)
                     selectedMenuIndex = maxMenuIndex;
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
                 selectedMenuIndex++;
                 if (selectedMenuIndex > maxMenuIndex)
                     selectedMenuIndex = 0;
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                playSoundEffect(Sound.LEVEL); // SE: Konfirmasi pilihan
                 switch (selectedMenuIndex) {
                     case 0: // Start Game
                         gameState = GameState.STAGE_SELECT;
                         selectedMenuIndex = 0;
                         maxMenuIndex = 1; // Select Stage / Back
+                        playMusicByState(); // Ganti musik jika perlu
                         break;
                     case 1: // How to Play
                         gameState = GameState.HOW_TO_PLAY;
+                        playMusicByState();
                         break;
                     case 2: // Exit
                         System.exit(0);
@@ -359,6 +404,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 gameState = GameState.MENU;
                 selectedMenuIndex = 0;
                 maxMenuIndex = 2;
+                playSoundEffect(Sound.LEVEL); // SE: Kembali
+                playMusicByState();
                 repaint();
             }
             return;
@@ -370,27 +417,34 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 selectedMenuIndex--;
                 if (selectedMenuIndex < 0)
                     selectedMenuIndex = maxMenuIndex;
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
                 selectedMenuIndex++;
                 if (selectedMenuIndex > maxMenuIndex)
                     selectedMenuIndex = 0;
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                playSoundEffect(Sound.LEVEL); // SE: Konfirmasi pilihan
                 if (selectedMenuIndex == 0) {
                     // Start the game
                     startGame();
+                    playMusicByState(); // Mulai musik game
                 } else {
                     // Back to menu
                     gameState = GameState.MENU;
                     selectedMenuIndex = 0;
                     maxMenuIndex = 2;
+                    playMusicByState(); // Kembali ke musik menu
                 }
                 repaint();
             } else if (keyCode == KeyEvent.VK_ESCAPE) {
                 gameState = GameState.MENU;
                 selectedMenuIndex = 0;
                 maxMenuIndex = 2;
+                playSoundEffect(Sound.LEVEL); // SE: Kembali
+                playMusicByState(); // Kembali ke musik menu
                 repaint();
             }
             return;
@@ -400,18 +454,23 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         if (gameState == GameState.WIN || gameState == GameState.LOSE) {
             if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
                 selectedMenuIndex = 0; // Try Again
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
                 selectedMenuIndex = 1; // Back to Menu
+                playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
             } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                playSoundEffect(Sound.LEVEL); // SE: Konfirmasi pilihan
                 if (selectedMenuIndex == 0) {
                     restartGame();
+                    playMusicByState(); // Mulai ulang musik game
                 } else {
                     gameState = GameState.MENU;
                     selectedMenuIndex = 0;
                     maxMenuIndex = 2;
                     resetGame();
+                    playMusicByState(); // Kembali ke musik menu
                 }
                 repaint();
             } else if (keyCode == KeyEvent.VK_ESCAPE) {
@@ -419,28 +478,35 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 selectedMenuIndex = 0;
                 maxMenuIndex = 2;
                 resetGame();
+                playSoundEffect(Sound.LEVEL); // SE: Kembali
+                playMusicByState(); // Kembali ke musik menu
                 repaint();
             }
             return;
         }
 
         if (gameState == GameState.PLAYING) {
-                // Enter pause with ESC (do not auto-resume with ESC)
-                if (keyCode == KeyEvent.VK_ESCAPE) {
-                    if (!isPaused) {
-                        isPaused = true;
-                        pauseSelectedIndex = 0; // Reset to Resume option
-                        showPauseControls = false;
-                        System.out.println("[GAME] Paused");
-                    } else {
-                        // If already paused and controls are shown, ESC handled below to close controls
-                    }
-                } else if (isPaused) {
+            // Enter pause with ESC (do not auto-resume with ESC)
+            if (keyCode == KeyEvent.VK_ESCAPE) {
+                if (!isPaused) {
+                    isPaused = true;
+                    pauseSelectedIndex = 0; // Reset to Resume option
+                    showPauseControls = false;
+                    System.out.println("[GAME] Paused");
+                    // --- INTEGRASI SOUND: Musik dihentikan saat pause ---
+                    sound.stop();
+                } else {
+                    // Jika sudah di-pause dan Controls ditampilkan, ESC akan menutup Controls
+                }
+            } else if (isPaused) {
                 if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
                     pauseSelectedIndex = (pauseSelectedIndex - 1 + PAUSE_MENU_SIZE) % PAUSE_MENU_SIZE;
+                    playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
                     pauseSelectedIndex = (pauseSelectedIndex + 1) % PAUSE_MENU_SIZE;
+                    playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 } else if (keyCode == KeyEvent.VK_ENTER) {
+                    playSoundEffect(Sound.LEVEL); // SE: Konfirmasi pilihan
                     if (showPauseControls) {
                         showPauseControls = false;
                     } else {
@@ -449,6 +515,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 } else if (keyCode == KeyEvent.VK_ESCAPE) {
                     if (showPauseControls) {
                         showPauseControls = false;
+                        playSoundEffect(Sound.LEVEL); // SE: Kembali
                     }
                 }
             } else {
@@ -462,6 +529,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             case 0: // Resume
                 isPaused = false;
                 System.out.println("[GAME] Resumed");
+                playMusicByState(); // Lanjutkan musik game
                 break;
             case 1: // Controls
                 showPauseControls = !showPauseControls;
@@ -475,6 +543,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 maxMenuIndex = 1; // Stage Select: Select Stage / Back
                 isPaused = false;
                 showPauseControls = false;
+                playMusicByState(); // Ganti musik ke menu/stage select
                 repaint();
                 break;
         }
