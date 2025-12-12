@@ -42,11 +42,6 @@ public class PlateStorage extends Station {
         System.out.println("[PLATE] Dirty plate received in Plate Storage.");
     }
 
-    // Expose current available plates count for UI overlays
-    public int getCount() {
-        return plateStack.size();
-    }
-
     @Override
     public void interact(Chef player) {
         // Tidak dapat melakukan drop item apapun pada station ini
