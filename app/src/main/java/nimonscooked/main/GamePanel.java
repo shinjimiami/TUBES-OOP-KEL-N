@@ -54,11 +54,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     BufferedImage[] chef1Sprites = new BufferedImage[8];
     BufferedImage[] chef2Sprites = new BufferedImage[8];
     BufferedImage menuBackground;
+    BufferedImage stageSelectBackground; // Full background for stage select
     BufferedImage winScreenBackground;
     BufferedImage loseScreenBackground;
     BufferedImage mapBackground; // Background image for the map
     BufferedImage pauseOverlayImage;
     BufferedImage timerBackground; // Timer box background image
+    BufferedImage mapCThumbnail; // Thumbnail for map C in stage select
 
     // Warna Pastel Lantai
     Color pastelOrange = new Color(255, 223, 186);
@@ -453,15 +455,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             return;
         }
 
-        // Handle STAGE_SELECT state
+        // Handle STAGE_SELECT state - HORIZONTAL navigation (A/D)
         if (gameState == GameState.STAGE_SELECT) {
-            if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_W) {
+            if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_A) {
                 selectedMenuIndex--;
                 if (selectedMenuIndex < 0)
                     selectedMenuIndex = maxMenuIndex;
                 playSoundEffect(Sound.LOADING); // SE: Pindah pilihan
                 repaint();
-            } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_S) {
+            } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_D) {
                 selectedMenuIndex++;
                 if (selectedMenuIndex > maxMenuIndex)
                     selectedMenuIndex = 0;

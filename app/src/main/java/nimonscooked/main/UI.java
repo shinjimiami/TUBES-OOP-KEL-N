@@ -855,64 +855,51 @@ public class UI {
 	}
 
 	public void drawStageSelect(Graphics2D g2) {
-		g2.setColor(new Color(255, 250, 205));
-		g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
-
-		g2.setFont(new Font("Arial", Font.BOLD, 56));
-		g2.setColor(new Color(255, 140, 0));
-		String title = "Select Stage";
-		int titleWidth = g2.getFontMetrics().stringWidth(title);
-		g2.drawString(title, (gp.screenWidth - titleWidth) / 2, 100);
-
-		g2.setFont(new Font("Arial", Font.PLAIN, 24));
-		g2.setColor(Color.BLACK);
-		String[] info = {
-				"Map: C - Burger Kitchen",
-				"Win: Complete 1 order",
-				"Lose: Score drops to -10",
-				"Recipes: Classic, Cheeseburger, BLT, Deluxe"
-		};
-
-		int infoY = 200;
-		for (int i = 0; i < info.length; i++) {
-			int infoWidth = g2.getFontMetrics().stringWidth(info[i]);
-			g2.drawString(info[i], (gp.screenWidth - infoWidth) / 2, infoY + i * 40);
+		// Draw full screen map thumbnail as background
+		if (gp.mapCThumbnail != null) {
+			g2.drawImage(gp.mapCThumbnail, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		} else if (gp.stageSelectBackground != null) {
+			g2.drawImage(gp.stageSelectBackground, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		} else {
+			// Fallback to solid color
+			g2.setColor(new Color(255, 250, 205));
+			g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 		}
 
-		int buttonWidth = 250;
-		int buttonHeight = 60;
-		int buttonX = (gp.screenWidth - buttonWidth) / 2;
-		int selectY = 380;
-		int backY = selectY + 80;
+		// 2 HORIZONTAL BUTTONS at bottom
+		int buttonWidth = 180;
+		int buttonHeight = 55;
+		int buttonSpacing = 40;
+		int totalWidth = (buttonWidth * 2) + buttonSpacing;
+		int startX = (gp.screenWidth - totalWidth) / 2;
+		int buttonY = gp.screenHeight - 150; // Position near bottom
 
+		// START Button (Left)
+		int startButtonX = startX;
 		boolean startSelected = gp.selectedMenuIndex == 0;
 		g2.setColor(startSelected ? new Color(70, 225, 70) : new Color(50, 205, 50));
-		g2.fillRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
+		g2.fillRoundRect(startButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
 		g2.setColor(Color.WHITE);
 		g2.setStroke(new BasicStroke(startSelected ? 5 : 3));
-		g2.drawRoundRect(buttonX, selectY, buttonWidth, buttonHeight, 20, 20);
-
-		g2.setFont(new Font("Arial", Font.BOLD, 32));
-		String selectText = "START!";
-		int selectTextWidth = g2.getFontMetrics().stringWidth(selectText);
-		g2.drawString(selectText, buttonX + (buttonWidth - selectTextWidth) / 2, selectY + 40);
-
-		boolean backSelected = gp.selectedMenuIndex == 1;
-		g2.setColor(backSelected ? new Color(120, 120, 120) : new Color(100, 100, 100));
-		g2.fillRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
-		g2.setColor(Color.WHITE);
-		g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
-		g2.drawRoundRect(buttonX, backY, buttonWidth, buttonHeight, 20, 20);
+		g2.drawRoundRect(startButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
 
 		g2.setFont(new Font("Arial", Font.BOLD, 28));
-		String backText = "Back";
-		int backTextWidth = g2.getFontMetrics().stringWidth(backText);
-		g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 38);
+		String startText = "START";
+		int startTextWidth = g2.getFontMetrics().stringWidth(startText);
+		g2.drawString(startText, startButtonX + (buttonWidth - startTextWidth) / 2, buttonY + 38);
 
-		g2.setColor(Color.BLACK);
-		g2.setFont(new Font("Arial", Font.PLAIN, 18));
-		String hint = "Use W/S to navigate | ENTER/SPACE to select | ESC to go back";
-		int hintWidth = g2.getFontMetrics().stringWidth(hint);
-		g2.drawString(hint, (gp.screenWidth - hintWidth) / 2, gp.screenHeight - 30);
+		// BACK Button (Right)
+		int backButtonX = startX + buttonWidth + buttonSpacing;
+		boolean backSelected = gp.selectedMenuIndex == 1;
+		g2.setColor(backSelected ? new Color(180, 120, 120) : new Color(150, 100, 100));
+		g2.fillRoundRect(backButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
+		g2.setColor(Color.WHITE);
+		g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
+		g2.drawRoundRect(backButtonX, buttonY, buttonWidth, buttonHeight, 20, 20);
+
+		g2.setFont(new Font("Arial", Font.BOLD, 28));
+		String backText = "BACK";
+		int backTextWidth = g2.getFontMetrics().stringWidth(backText);
+		g2.drawString(backText, backButtonX + (buttonWidth - backTextWidth) / 2, buttonY + 38);
 	}
 }
