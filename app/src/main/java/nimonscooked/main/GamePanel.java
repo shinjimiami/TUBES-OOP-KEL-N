@@ -549,45 +549,16 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         if (orders.isEmpty())
             return;
 
-        // Horizontal strip in top margin
-        int orderWidth = (screenWidth - 10) / Math.max(orders.size(), 1);
-        int orderHeight = topMargin - 4;
-        int startY = 2;
-
-        // Background strip
-        g2.setColor(new Color(30, 30, 30, 200));
-        g2.fillRect(0, 0, screenWidth, topMargin);
-        g2.setColor(new Color(255, 215, 0, 100));
-        g2.fillRect(0, topMargin - 2, screenWidth, 2);
-
-        // SCOREBOARD - kanan atas (tidak menimpa orders)
-        int scoreBoxWidth = 150;
-        int scoreBoxX = screenWidth - scoreBoxWidth - 5;
-
-        // Background box untuk score
-        g2.setColor(new Color(0, 0, 0, 200));
-        g2.fillRoundRect(scoreBoxX, 2, scoreBoxWidth, topMargin - 4, 5, 5);
-
-        // Border
-        g2.setColor(new Color(255, 215, 0));
-        g2.setStroke(new BasicStroke(2));
-        g2.drawRoundRect(scoreBoxX, 2, scoreBoxWidth, topMargin - 4, 5, 5);
-
-        // Score text
-        g2.setFont(new Font("SansSerif", Font.BOLD, 12));
-        String scoreText = "SCORE: " + orderManager.getScore();
-        g2.drawString(scoreText, scoreBoxX + 10, 14);
-
-        // Stats
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 8));
-        g2.setColor(new Color(100, 255, 100));
-        g2.drawString("✓ " + orderManager.getCompletedOrders(), scoreBoxX + 10, 24);
-        g2.setColor(new Color(255, 100, 100));
-        g2.drawString("✗ " + orderManager.getExpiredOrders(), scoreBoxX + 70, 24);
+        // Order panel - positioned at very top, centered
+        int orderWidth = 120;
+        int orderHeight = 50;
+        int orderPanelY = 5; // At the very top
+        int totalOrderWidth = Math.min(orders.size() * (orderWidth + 5), screenWidth - 20);
+        int orderStartX = (screenWidth - totalOrderWidth) / 2; // Center horizontally
 
         for (int i = 0; i < orders.size(); i++) {
             nimonscooked.entity.order.Order order = orders.get(i);
-            int orderX = i * orderWidth + 2;
+            int orderX = orderStartX + i * (orderWidth + 5);
 
             // Determine color based on time remaining
             float timeRatio = order.getRemainingTime() / order.getDuration();
@@ -600,30 +571,27 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 indicatorColor = new Color(255, 100, 100); // Red
             }
 
-            // Order box
-            g2.setColor(new Color(50, 50, 50, 220));
-            g2.fillRect(orderX, startY, orderWidth - 4, orderHeight);
+            // Order box with semi-transparent background
+            g2.setColor(new Color(30, 30, 30, 230));
+            g2.fillRoundRect(orderX, orderPanelY, orderWidth, orderHeight, 8, 8);
 
-            // Top indicator bar
+            // Border
             g2.setColor(indicatorColor);
-            g2.fillRect(orderX, startY, orderWidth - 4, 2);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawRoundRect(orderX, orderPanelY, orderWidth, orderHeight, 8, 8);
 
-            // Order info - horizontal layout
-            int textX = orderX + 6;
-            int textY = startY + 11;
+            // Order info - vertical compact layout
+            int textX = orderX + 8;
+            int textY = orderPanelY + 15;
 
-            // Order number
+            // Order number and recipe name
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Monospaced", Font.BOLD, 10));
-            g2.drawString("#" + order.getId(), textX, textY);
+            g2.setFont(new Font("Monospaced", Font.BOLD, 9));
+            String orderLabel = "#" + order.getId() + " " + order.getRecipe().getName().replace(" Burger", "");
+            g2.drawString(orderLabel, textX, textY);
 
-            // Recipe name
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 8));
-            String recipeName = order.getRecipe().getName().replace(" Burger", "");
-            g2.drawString(recipeName, textX + 20, textY);
-
-            // Requirements - horizontal dengan spacing jelas
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 8));
+            // Requirements - compact
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 7));
             g2.setColor(new Color(200, 200, 200));
 
             StringBuilder ingredients = new StringBuilder();
@@ -641,10 +609,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                         ingShort = "Ches";
                         break;
                     case "Lettuce":
-                        ingShort = "Lett";
+                        ingShort = "Let";
                         break;
                     case "Tomato":
-                        ingShort = "Toma";
+                        ingShort = "Tom";
                         break;
                 }
 
@@ -668,14 +636,14 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                         break;
                 }
 
-                ingredients.append(ingShort).append(stateSymbol).append("  ");
+                ingredients.append(ingShort).append(stateSymbol).append(" ");
             }
-            g2.drawString(ingredients.toString().trim(), textX, textY + 10);
+            g2.drawString(ingredients.toString().trim(), textX, textY + 12);
 
-            // Time
+            // Time - larger and more visible
             g2.setColor(indicatorColor);
-            g2.setFont(new Font("Monospaced", Font.BOLD, 8));
-            g2.drawString(String.format("%.0fs", order.getRemainingTime()), textX, textY + 18);
+            g2.setFont(new Font("Monospaced", Font.BOLD, 10));
+            g2.drawString(String.format("%.0fs", order.getRemainingTime()), textX, textY + 26);
         }
     }
 
@@ -690,6 +658,29 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g2.setColor(new Color(255, 215, 0));
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(0, uiY, screenWidth, uiHeight);
+
+        // SCORE BOX - pojok kanan, di atas UI panel
+        int scoreBoxWidth = 200;
+        int scoreBoxHeight = 35;
+        int scoreBoxX = screenWidth - scoreBoxWidth - 10; // Right corner
+        int scoreBoxY = uiY - scoreBoxHeight - 5; // Just above UI panel
+
+        // Background box untuk score
+        g2.setColor(new Color(0, 0, 0, 220));
+        g2.fillRoundRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight, 8, 8);
+
+        // Border with gradient effect
+        g2.setColor(new Color(255, 215, 0));
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRoundRect(scoreBoxX, scoreBoxY, scoreBoxWidth, scoreBoxHeight, 8, 8);
+
+        // Score text - larger and centered
+        g2.setFont(new Font("Monospaced", Font.BOLD, 18));
+        g2.setColor(new Color(255, 215, 0));
+        String scoreText = "SCORE: " + orderManager.getScore();
+        FontMetrics fm = g2.getFontMetrics();
+        int scoreTextWidth = fm.stringWidth(scoreText);
+        g2.drawString(scoreText, scoreBoxX + (scoreBoxWidth - scoreTextWidth) / 2, scoreBoxY + 24);
 
         // Draw info for each chef
         int chefUIWidth = screenWidth / chefs.size();
