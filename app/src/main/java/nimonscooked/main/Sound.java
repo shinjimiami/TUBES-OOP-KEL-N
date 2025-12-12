@@ -22,7 +22,7 @@ public class Sound {
     Clip clip;
     ArrayList<URL> soundURL = new ArrayList<>();
     FloatControl volumeControl;
-    private float currentVolume = 0.5f;
+    private float currentVolume = 0.8f;
 
     public Sound(){
         soundURL.add(getClass().getResource("/sound/chopping.wav")); // 0
@@ -123,7 +123,7 @@ public class Sound {
 
     public void unmute() {
         if (currentVolume == 0.0f) {
-            setVolume(0.5f);
+            setVolume(0.8f);
         }
     }
 
