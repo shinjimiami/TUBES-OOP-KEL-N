@@ -569,34 +569,53 @@ public class UI {
 				: gp.loseScreenBackground;
 
 		if (background != null) {
+			// Draw background image
 			g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
 
-			int buttonWidth = 385;
-			int buttonHeight = 70;
+			int buttonWidth = 300;
+			int buttonHeight = 60;
 			int buttonX = (gp.screenWidth - buttonWidth) / 2;
 
 			int tryAgainY = 500;
-			int backY = 600;
+			int backY = 580;
 
-			int highlightY = gp.selectedMenuIndex == 0 ? tryAgainY : backY;
-			g2.setColor(new Color(255, 255, 255, 100));
-			g2.fillRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
-			g2.setColor(new Color(255, 255, 255, 200));
-			g2.setStroke(new BasicStroke(4));
-			g2.drawRoundRect(buttonX - 10, highlightY - 5, buttonWidth + 20, buttonHeight + 10, 15, 15);
+			// Draw TRY AGAIN button
+			boolean tryAgainSelected = gp.selectedMenuIndex == 0;
 
-			g2.setFont(new Font("Monospaced", Font.BOLD, 36));
+			// Button background box
+			g2.setColor(tryAgainSelected ? new Color(70, 170, 70, 230) : new Color(50, 150, 50, 200));
+			g2.fillRoundRect(buttonX, tryAgainY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button border
+			g2.setColor(tryAgainSelected ? new Color(100, 255, 100) : new Color(80, 200, 80));
+			g2.setStroke(new BasicStroke(tryAgainSelected ? 5 : 3));
+			g2.drawRoundRect(buttonX, tryAgainY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button text
+			g2.setFont(new Font("Monospaced", Font.BOLD, 28));
 			FontMetrics fm = g2.getFontMetrics();
-
-			g2.setColor(gp.selectedMenuIndex == 0 ? new Color(255, 255, 0) : new Color(255, 255, 100));
+			g2.setColor(Color.WHITE);
 			String tryAgainText = "TRY AGAIN";
 			int tryAgainTextWidth = fm.stringWidth(tryAgainText);
-			g2.drawString(tryAgainText, buttonX + (buttonWidth - tryAgainTextWidth) / 2, tryAgainY + 45);
+			g2.drawString(tryAgainText, buttonX + (buttonWidth - tryAgainTextWidth) / 2, tryAgainY + 38);
 
-			g2.setColor(gp.selectedMenuIndex == 1 ? new Color(255, 100, 100) : new Color(255, 150, 150));
+			// Draw BACK TO MENU button
+			boolean backSelected = gp.selectedMenuIndex == 1;
+
+			// Button background box
+			g2.setColor(backSelected ? new Color(120, 120, 120, 230) : new Color(100, 100, 100, 200));
+			g2.fillRoundRect(buttonX, backY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button border
+			g2.setColor(backSelected ? Color.WHITE : new Color(180, 180, 180));
+			g2.setStroke(new BasicStroke(backSelected ? 5 : 3));
+			g2.drawRoundRect(buttonX, backY, buttonWidth, buttonHeight, 15, 15);
+
+			// Button text
+			g2.setColor(Color.WHITE);
 			String backText = "BACK TO MENU";
 			int backTextWidth = fm.stringWidth(backText);
-			g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 45);
+			g2.drawString(backText, buttonX + (buttonWidth - backTextWidth) / 2, backY + 38);
 
 		} else {
 			g2.setColor(new Color(0, 0, 0, 200));
@@ -812,7 +831,7 @@ public class UI {
 				"",
 				"Objective:",
 				"  • Prepare orders correctly and quickly",
-				"  • Complete 2 orders to WIN",
+				"  • Complete 1 order to WIN",
 				"  • Score drops to -10: GAME OVER",
 				"",
 				"Tips:",
@@ -846,7 +865,7 @@ public class UI {
 		g2.setColor(Color.BLACK);
 		String[] info = {
 				"Map: C - Burger Kitchen",
-				"Win: Complete 2 orders",
+				"Win: Complete 1 order",
 				"Lose: Score drops to -10",
 				"Recipes: Classic, Cheeseburger, BLT, Deluxe"
 		};

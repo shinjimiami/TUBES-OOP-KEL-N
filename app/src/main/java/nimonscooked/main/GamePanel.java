@@ -101,7 +101,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     GameState gameState = GameState.MENU; // Start at menu
-    private final int WIN_COMPLETED_ORDERS = 2; // Win after 2 completed orders
+    private final int WIN_COMPLETED_ORDERS = 1; // Win after 1 completed order
     private final int LOSE_SCORE = -10; // Lose condition
 
     // Menu navigation
