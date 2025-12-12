@@ -47,6 +47,7 @@ public class AssetSetter {
     public void setAssets() {
         try {
             gp.menuBackground = load("/menu/start.png");
+            gp.stageSelectBackground = load("/menu/stage_select.png");
             gp.winScreenBackground = load("/menu/win_screen.png");
             gp.loseScreenBackground = load("/menu/lose_screen.png");
             gp.mapBackground = load("/maps/map_d.png");
@@ -58,6 +59,14 @@ public class AssetSetter {
                 System.out.println("[UI] ✅ Timer background loaded successfully!");
             } else {
                 System.out.println("[UI] ℹ️ No custom timer background - using default box");
+            }
+
+            // Load map C thumbnail for stage select
+            gp.mapCThumbnail = load("/maps/thumbnails/map_c_thumbnail.png");
+            if (gp.mapCThumbnail != null) {
+                System.out.println("[UI] ✅ Map C thumbnail loaded successfully!");
+            } else {
+                System.out.println("[UI] ⚠️ Map C thumbnail not found");
             }
 
             // Try to load chef sprites using actual resource filenames present in
