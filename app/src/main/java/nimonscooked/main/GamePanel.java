@@ -103,7 +103,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     GameState gameState = GameState.MENU; // Start at menu
-    private final int WIN_COMPLETED_ORDERS = 1; // Win after 1 completed order
+    private final int WIN_COMPLETED_ORDERS = 2; // Win after 2 completed orders
     private final int LOSE_SCORE = -10; // Lose condition
 
     // Menu navigation
@@ -280,6 +280,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                         // playSoundEffect(Sound.FRY);
                     }
                     cookingStation.update(currentTime);
+                } else if (station instanceof nimonscooked.entity.station.ServingCounter) {
+                    nimonscooked.entity.station.ServingCounter servingCounter = (nimonscooked.entity.station.ServingCounter) station;
+                    servingCounter.updateDirtyPlate(16); // ~16ms per frame at 60 FPS
                 }
             }
         }

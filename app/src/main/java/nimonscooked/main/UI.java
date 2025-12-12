@@ -200,6 +200,89 @@ public class UI {
 							drawProgressBar(g2, x, y, (int) (progress * 100), 100, barColor);
 						}
 					}
+				} else if (station instanceof nimonscooked.entity.station.PlateStorage) {
+					nimonscooked.entity.station.PlateStorage plateStorage = (nimonscooked.entity.station.PlateStorage) station;
+
+					int totalPlates = plateStorage.getTotalPlateCount();
+					int cleanPlates = plateStorage.getCleanPlateCount();
+					int dirtyPlates = plateStorage.getDirtyPlateCount();
+
+					// Draw counter box
+					int boxWidth = 70;
+					int boxHeight = 50;
+					int boxX = x + (gp.tileSize - boxWidth) / 2;
+					int boxY = y - boxHeight - 5;
+
+					// Background
+					g2.setColor(new Color(0, 0, 0, 180));
+					g2.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 8, 8);
+
+					// Border
+					g2.setColor(new Color(255, 255, 255, 200));
+					g2.setStroke(new java.awt.BasicStroke(2));
+					g2.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 8, 8);
+
+					// Text
+					g2.setFont(new Font("Arial", Font.BOLD, 12));
+
+					// Clean plates (green)
+					g2.setColor(new Color(100, 255, 100));
+					g2.drawString("✓ " + cleanPlates, boxX + 5, boxY + 18);
+
+					// Dirty plates (red)
+					g2.setColor(new Color(255, 100, 100));
+					g2.drawString("✗ " + dirtyPlates, boxX + 5, boxY + 35);
+
+					// Total (white, right aligned)
+					g2.setColor(Color.WHITE);
+					String totalText = "=" + totalPlates;
+					int textWidth = g2.getFontMetrics().stringWidth(totalText);
+					g2.drawString(totalText, boxX + boxWidth - textWidth - 5, boxY + 35);
+
+				} else if (station instanceof nimonscooked.entity.station.WashingStation) {
+					nimonscooked.entity.station.WashingStation washStation = (nimonscooked.entity.station.WashingStation) station;
+
+					int dirtyCount = washStation.getDirtyPlateCount();
+					int cleanCount = washStation.getCleanPlateCount();
+
+					// Draw washing progress bar if busy
+					if (washStation.isBusy()) {
+						int progress = washStation.getSavedTime();
+						int maxProgress = washStation.getWashDurationMs();
+						drawProgressBar(g2, x, y, progress, maxProgress, new Color(100, 200, 255));
+					}
+
+					// Draw counter box if there are plates
+					if (dirtyCount > 0 || cleanCount > 0) {
+						int boxWidth = 60;
+						int boxHeight = 45;
+						int boxX = x + (gp.tileSize - boxWidth) / 2;
+						int boxY = y - boxHeight - 5;
+
+						// Background
+						g2.setColor(new Color(0, 0, 0, 180));
+						g2.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 8, 8);
+
+						// Border
+						g2.setColor(new Color(100, 200, 255, 200));
+						g2.setStroke(new java.awt.BasicStroke(2));
+						g2.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 8, 8);
+
+						// Text
+						g2.setFont(new Font("Arial", Font.BOLD, 11));
+
+						// Dirty plates (red)
+						if (dirtyCount > 0) {
+							g2.setColor(new Color(255, 100, 100));
+							g2.drawString("Kotor: " + dirtyCount, boxX + 5, boxY + 16);
+						}
+
+						// Clean plates (green)
+						if (cleanCount > 0) {
+							g2.setColor(new Color(100, 255, 100));
+							g2.drawString("Bersih: " + cleanCount, boxX + 5, boxY + 33);
+						}
+					}
 				}
 			}
 		}

@@ -41,9 +41,27 @@ public class GameMap {
     private void initializeStations() {
         stationGrid = new Station[rows][cols];
 
+        // First pass: Find PlateStorage
+        PlateStorage plateStorage = null;
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                if (grid[y][x] == 'P') {
+                    plateStorage = new PlateStorage(null);
+                    stationGrid[y][x] = plateStorage;
+                    break;
+                }
+            }
+            if (plateStorage != null)
+                break;
+        }
+
+        // Second pass: Create other stations
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 char tile = grid[y][x];
+                if (tile == 'P')
+                    continue; // Already created
+
                 String id = "ST-" + x + "-" + y; // ID Unik: misal ST-0-1
 
                 // Factory sederhana untuk membuat objek station yang sesuai
@@ -52,13 +70,12 @@ public class GameMap {
                     case 'C' -> stationGrid[y][x] = new CuttingStation(null);
                     case 'R' -> stationGrid[y][x] = new CookingStation(null);
                     case 'W' -> stationGrid[y][x] = new WashingStation(null);
-                    case 'S' -> stationGrid[y][x] = new ServingCounter(null, null);
+                    case 'S' -> stationGrid[y][x] = new ServingCounter(null, plateStorage);
                     case 'M' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.MEAT);
                     case 'B' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.BUN);
                     case 'H' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.CHEESE);
                     case 'L' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.LETTUCE);
                     case 'O' -> stationGrid[y][x] = new IngredientStorage(null, IngredientType.TOMATO);
-                    case 'P' -> stationGrid[y][x] = new PlateStorage(null);
                     case 'F' -> stationGrid[y][x] = new KitchenUtensilStorage(null); // FryingPan storage
                     case 'T' -> stationGrid[y][x] = new TrashStation(null);
                     case 'A' -> stationGrid[y][x] = new AssemblyStation(null);

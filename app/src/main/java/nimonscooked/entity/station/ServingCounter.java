@@ -49,14 +49,23 @@ public class ServingCounter extends Station {
         if (returnQueue.isEmpty())
             return;
 
+        System.out.println("[SERVING] Update called. Queue size: " + returnQueue.size());
+
         Iterator<PlateReturnTimer> iterator = returnQueue.iterator();
         while (iterator.hasNext()) {
             PlateReturnTimer timer = iterator.next();
             timer.remainingTime -= timePassed;
 
+            System.out.println("[SERVING] Timer countdown: " + timer.remainingTime + "ms remaining");
+
             if (timer.remainingTime <= 0) {
-                System.out.println("[SERVING] Returning plate");
-                plateStorage.receiveDirtyPlate(timer.plate);
+                System.out.println("[SERVING] Returning dirty plate to storage after 10 seconds");
+                if (plateStorage != null) {
+                    plateStorage.receiveDirtyPlate(timer.plate);
+                    System.out.println("[SERVING] Plate successfully returned to PlateStorage");
+                } else {
+                    System.out.println("[SERVING] ERROR: PlateStorage is NULL!");
+                }
                 iterator.remove();
             }
         }
@@ -90,7 +99,10 @@ public class ServingCounter extends Station {
                     servedPlate.clearDish();
 
                     returnQueue.add(new PlateReturnTimer(servedPlate, ServingReturnTime));
-                    System.out.println("[SERVING] Plate is being cleaned and will return to storage");
+                    System.out.println(
+                            "[SERVING] Plate marked DIRTY and added to return queue (10 seconds timer started)");
+                    System.out.println("[SERVING] Current queue size: " + returnQueue.size());
+                    System.out.println("[SERVING] PlateStorage reference: " + (plateStorage != null ? "OK" : "NULL"));
                     return;
                 } else {
                     System.out.println("[SERVING] Plate is empty - add ingredients first!");

@@ -6,6 +6,7 @@ import nimonscooked.enums.ChefStatus;
 import nimonscooked.enums.EntityType;
 import nimonscooked.object.Position;
 import nimonscooked.entity.item.Item;
+import nimonscooked.entity.item.kitchenutensil.DirtyPlateStack;
 
 public class Chef {
     private String id;
@@ -216,6 +217,23 @@ public class Chef {
 
     public boolean isDashReady() {
         return System.currentTimeMillis() - lastDashTime >= DASH_COOLDOWN;
+    }
+
+    /**
+     * Checks if the chef is carrying a DirtyPlateStack
+     */
+    public boolean isCarryingDirtyPlates() {
+        return inventory instanceof DirtyPlateStack;
+    }
+
+    /**
+     * Gets the DirtyPlateStack if chef is carrying one
+     */
+    public DirtyPlateStack getDirtyPlateStack() {
+        if (inventory instanceof DirtyPlateStack) {
+            return (DirtyPlateStack) inventory;
+        }
+        return null;
     }
 
     public boolean throwItem(nimonscooked.object.GameMap map, java.util.List<Chef> allChefs) {

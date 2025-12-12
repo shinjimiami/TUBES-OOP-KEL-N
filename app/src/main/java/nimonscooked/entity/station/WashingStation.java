@@ -5,7 +5,7 @@ import nimonscooked.main.GamePanel;
 import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.Item;
 import nimonscooked.entity.item.kitchenutensil.Plate;
-import nimonscooked.entity.item.kitchenutensil.PlateStack;
+import nimonscooked.entity.item.kitchenutensil.DirtyPlateStack;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -35,51 +35,45 @@ public class WashingStation extends Station {
         }
     }
 
+    /**
+     * Proses mencuci piring dengan timer. Dipanggil dari GamePanel update loop.
+     * 
+     * @param timeNeeded waktu yang telah berlalu (dalam ms)
+     * @return true jika ada perubahan status
+     */
     public boolean processWash(int timeNeeded) {
-        if (!(containedItem instanceof Plate) || !((Plate) containedItem).isDirty()) {
+        // Validasi: Harus ada piring kotor di area cuci dan ada chef yang sedang
+        // mencuci
+        if (!(containedItem instanceof Plate) || !((Plate) containedItem).isDirty() || busyChef == null) {
             this.savedTime = 0;
-
-            // Release chef if washing stopped
-            if (busyChef != null) {
-                busyChef.setCurrentAction(nimonscooked.enums.ChefStatus.IDLE);
-                busyChef = null;
-            }
-
-            // kalo kosong, ambil dirty plate baru
-            if (containedItem == null && !dirtyPlateStack.isEmpty()) {
-                super.placeItem(dirtyPlateStack.pop());
-                return true;
-            }
             return false;
         }
 
         Plate plateToWash = (Plate) containedItem;
-
         this.savedTime += timeNeeded;
 
-        // cek Selesai
+        // Cek apakah sudah selesai mencuci (3 detik)
         if (this.savedTime >= WashDuration) {
-            plateToWash.setDirty(false);
-            plateToWash.clearDish();
+            // Cuci piring menggunakan method wash()
+            plateToWash.wash();
             this.savedTime = 0;
 
             super.takeItem();
 
-            // Release chef from BUSY status
+            // Release chef dari status BUSY
             if (busyChef != null) {
                 busyChef.setCurrentAction(nimonscooked.enums.ChefStatus.IDLE);
-                System.out
-                        .println("[WASH] Piring selesai dicuci dan dipindahkan ke tumpukan bersih. Chef is now IDLE.");
+                System.out.println("[WASH] Piring selesai dicuci! Chef kembali IDLE.");
                 busyChef = null;
             }
 
-            // Pindahkan piring ke stack bersih
+            // Pindahkan piring bersih ke tumpukan
             cleanPlateStack.push(plateToWash);
+            System.out.println(
+                    "[WASH] Piring bersih dipindahkan ke tumpukan. Total piring bersih: " + cleanPlateStack.size());
 
-            // Otomatis mulai mencuci piring kotor berikutnya jika ada
-            if (!dirtyPlateStack.isEmpty()) {
-                super.placeItem(dirtyPlateStack.pop());
-            }
+            // TIDAK otomatis mulai mencuci berikutnya (chef harus interact lagi)
+            // Ini sesuai spesifikasi: chef harus interact untuk memulai washing
 
             return true;
         }
@@ -106,38 +100,74 @@ public class WashingStation extends Station {
     @Override
     public void interact(Chef player) {
         Item heldItem = player.getInventory();
-        if (heldItem != null) {
 
-            // player membawa Plate kotor tunggal
-            if (heldItem instanceof Plate && ((Plate) heldItem).isDirty()) {
-                dirtyPlateStack.push((Plate) player.getInventory());
+        // KONDISI 1: Chef membawa item
+        if (heldItem != null) {
+            // 1A: Chef membawa DirtyPlateStack (tumpukan piring kotor)
+            if (heldItem instanceof DirtyPlateStack) {
+                DirtyPlateStack stack = (DirtyPlateStack) heldItem;
+                System.out.println("[WASH] Meletakkan " + stack.getCount() + " piring kotor ke washing station.");
+
+                // Pindahkan semua piring dari stack ke dirtyPlateStack
+                for (Plate plate : stack.getPlates()) {
+                    dirtyPlateStack.push(plate);
+                }
                 player.setInventory(null);
-                System.out.println("[WASH] Piring kotor tunggal diletakkan.");
-            } else {
+
+                // Auto-start washing jika area cuci kosong
+                if (this.containedItem == null && !dirtyPlateStack.isEmpty()) {
+                    super.placeItem(dirtyPlateStack.pop());
+                    this.savedTime = 0;
+                    startWashing(player);
+                }
                 return;
             }
 
-            // Setelah item ditaruh, cek apakah area cuci bisa diisi dan auto-start washing
-            if (this.containedItem == null && !dirtyPlateStack.isEmpty()) {
-                super.placeItem(dirtyPlateStack.pop());
-                this.savedTime = 0;
-                startWashing(player); // Auto-start washing with BUSY status
+            // 1B: Chef membawa Plate kotor tunggal
+            if (heldItem instanceof Plate && ((Plate) heldItem).isDirty()) {
+                dirtyPlateStack.push((Plate) heldItem);
+                player.setInventory(null);
+                System.out.println("[WASH] Piring kotor tunggal diletakkan.");
+
+                // Auto-start washing jika area cuci kosong
+                if (this.containedItem == null && !dirtyPlateStack.isEmpty()) {
+                    super.placeItem(dirtyPlateStack.pop());
+                    this.savedTime = 0;
+                    startWashing(player);
+                }
+                return;
             }
+
+            // 1C: Chef membawa item lain (ditolak)
+            System.out.println("[WASH] Washing station hanya menerima piring kotor.");
             return;
         }
 
-        // mengambil piring bersih (only if not currently washing)
-        if (heldItem == null && !cleanPlateStack.isEmpty() && busyChef == null) {
-            player.setInventory(cleanPlateStack.pop());
-            System.out.println("[WASH] Mengambil 1 piring bersih.");
-            return;
-        }
+        // KONDISI 2: Chef tidak membawa item (tangan kosong)
+        if (heldItem == null) {
+            // 2A: Ambil piring bersih dari tumpukan (jika tidak sedang mencuci)
+            if (!cleanPlateStack.isEmpty() && busyChef == null) {
+                player.setInventory(cleanPlateStack.pop());
+                System.out.println("[WASH] Mengambil 1 piring bersih.");
+                return;
+            }
 
-        // mengambil item
-        if (heldItem == null && this.containedItem != null) {
-            player.setInventory(super.takeItem());
-            this.savedTime = 0; // reset
-            return;
+            // 2B: Mulai mencuci jika ada piring kotor di area cuci
+            if (this.containedItem instanceof Plate && ((Plate) this.containedItem).isDirty() && busyChef == null) {
+                startWashing(player);
+                System.out.println("[WASH] Chef mulai mencuci piring (3 detik)...");
+                return;
+            }
+
+            // 2C: Ambil piring dari area cuci (jika ada dan sudah bersih)
+            if (this.containedItem != null && !((Plate) this.containedItem).isDirty()) {
+                player.setInventory(super.takeItem());
+                this.savedTime = 0;
+                System.out.println("[WASH] Mengambil piring bersih dari area cuci.");
+                return;
+            }
+
+            System.out.println("[WASH] Tidak ada yang bisa dilakukan.");
         }
     }
 
@@ -155,5 +185,30 @@ public class WashingStation extends Station {
 
     public List<Plate> getCleanPlates() {
         return new LinkedList<>(cleanPlateStack);
+    }
+
+    /**
+     * Mendapatkan jumlah piring kotor yang menunggu
+     */
+    public int getDirtyPlateCount() {
+        return dirtyPlateStack.size();
+    }
+
+    /**
+     * Mendapatkan jumlah piring bersih yang siap diambil
+     */
+    public int getCleanPlateCount() {
+        return cleanPlateStack.size();
+    }
+
+    /**
+     * Kembalikan semua piring bersih ke PlateStorage
+     * Bisa dipanggil saat reset game atau cleanup
+     */
+    public void returnCleanPlatesToStorage(PlateStorage storage) {
+        while (!cleanPlateStack.isEmpty()) {
+            storage.addPlate(cleanPlateStack.pop());
+        }
+        System.out.println("[WASH] Semua piring bersih dikembalikan ke PlateStorage.");
     }
 }

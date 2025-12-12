@@ -3,11 +3,10 @@ package nimonscooked.entity.station;
 import nimonscooked.main.GamePanel;
 import nimonscooked.entity.Chef;
 import nimonscooked.entity.item.kitchenutensil.Plate;
-import nimonscooked.entity.item.Item;
+import nimonscooked.entity.item.kitchenutensil.DirtyPlateStack;
 
 import java.util.LinkedList;
 import java.util.Deque;
-import java.util.List;
 
 // berfungsi untuk menyimpan plate yang diambil pemain
 // pada awal game, plate akan tersedia di plate storage dalam kondisi bersih
@@ -36,17 +35,26 @@ public class PlateStorage extends Station {
         }
     }
 
-    // menerima piring kotor dari Serving Counter dan menaruhnya di paling atas.
+    // Menerima piring kotor dari Serving Counter dan menaruhnya di paling atas
+    // stack
     public void receiveDirtyPlate(Plate dirtyPlate) {
         plateStack.push(dirtyPlate);
-        System.out.println("[PLATE] Dirty plate received in Plate Storage.");
+        System.out.println("[PLATE STORAGE] Dirty plate received! Stack size now: " + plateStack.size());
+        System.out.println("[PLATE STORAGE] Clean: " + getCleanPlateCount() + ", Dirty: " + getDirtyPlateCount());
+    }
+
+    /**
+     * Method untuk menambahkan piring ke storage (bisa bersih/kotor)
+     */
+    public void addPlate(Plate plate) {
+        plateStack.push(plate);
     }
 
     @Override
     public void interact(Chef player) {
-        // Tidak dapat melakukan drop item apapun pada station ini
+        // KONDISI 3: Station ini TIDAK MENERIMA drop item apapun (sesuai spec)
         if (player.getInventory() != null) {
-            System.out.println("[PLATE] Plate Storage hanya untuk mengambil piring.");
+            System.out.println("[PLATE] Plate Storage hanya untuk mengambil piring, tidak bisa drop item.");
             return;
         }
 
@@ -58,26 +66,65 @@ public class PlateStorage extends Station {
         Plate topPlate = plateStack.peek();
 
         if (topPlate.isDirty()) {
-            // Piring kotor dapat langsung diambil semuanya (stacking)
+            // KONDISI 1: Ambil SEMUA piring kotor yang ada di tumpukan atas
             takeDirtyStack(player);
         } else {
-            // Piring bersih hanya bisa diambil 1 per 1
-            Plate cleanPlate = plateStack.removeFirst();
+            // KONDISI 2: Ambil HANYA 1 piring bersih dari TOP stack
+            Plate cleanPlate = plateStack.pop(); // Ambil dari TOP (last), bukan bottom (first)
             player.setInventory(cleanPlate);
-            System.out.println("[PLATE] Mengambil 1 piring bersih.");
+            System.out.println("[PLATE] Mengambil 1 piring bersih dari atas stack.");
         }
     }
 
+    /**
+     * Mengambil semua piring kotor dari atas stack secara berurutan
+     * sampai ketemu piring bersih atau stack habis
+     */
     private void takeDirtyStack(Chef player) {
-        List<Plate> dirtyStack = new LinkedList<>();
+        DirtyPlateStack dirtyStack = new DirtyPlateStack(gp);
 
+        // Ambil semua piring kotor dari atas sampai ketemu piring bersih
         while (!plateStack.isEmpty() && plateStack.peekFirst().isDirty()) {
-            dirtyStack.add(plateStack.removeFirst());
+            Plate dirtyPlate = plateStack.removeFirst();
+            dirtyStack.addPlate(dirtyPlate);
         }
 
         if (!dirtyStack.isEmpty()) {
-            player.setInventory(dirtyStack.removeFirst());
-            System.out.println("[PLATE] Take " + dirtyStack.size() + " dirty plates.");
+            player.setInventory(dirtyStack);
+            System.out.println("[PLATE] Mengambil " + dirtyStack.getCount() + " piring kotor.");
         }
+    }
+
+    /**
+     * Mendapatkan total jumlah piring di storage (bersih + kotor)
+     */
+    public int getTotalPlateCount() {
+        return plateStack.size();
+    }
+
+    /**
+     * Mendapatkan jumlah piring bersih di storage
+     */
+    public int getCleanPlateCount() {
+        int count = 0;
+        for (Plate plate : plateStack) {
+            if (!plate.isDirty()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Mendapatkan jumlah piring kotor di storage
+     */
+    public int getDirtyPlateCount() {
+        int count = 0;
+        for (Plate plate : plateStack) {
+            if (plate.isDirty()) {
+                count++;
+            }
+        }
+        return count;
     }
 }

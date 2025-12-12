@@ -39,6 +39,15 @@ public class Plate extends KitchenUtensils {
         return isDirty;
     }
 
+    /**
+     * Mencuci piring - mengubah status menjadi bersih dan menghapus isi dish
+     */
+    public void wash() {
+        this.isDirty = false;
+        clearDish();
+        System.out.println("[PLATE] Piring telah dicuci dan bersih.");
+    }
+
     public void clearDish() {
         if (dish != null) {
             dish.clearDish();
