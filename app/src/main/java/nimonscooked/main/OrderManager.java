@@ -26,6 +26,11 @@ public class OrderManager {
     private int completedOrders = 0;
     private int expiredOrders = 0;
 
+    // Stage Timer (3 minutes = 180 seconds)
+    private float stageTimeRemaining = 180f;
+    private final float STAGE_DURATION = 180f;
+    private boolean stageTimerRunning = false;
+
     private OrderManager() {
         initBurgerRecipes();
     }
@@ -78,6 +83,15 @@ public class OrderManager {
     }
 
     public void update(float deltaTime) {
+        // Update stage timer if running
+        if (stageTimerRunning && stageTimeRemaining > 0) {
+            stageTimeRemaining -= deltaTime;
+            if (stageTimeRemaining < 0) {
+                stageTimeRemaining = 0;
+            }
+        }
+
+        // Update order timers
         for (Order o : activeOrders) {
             o.updateTimer(deltaTime);
             if (o.isExpired()) {
@@ -175,6 +189,35 @@ public class OrderManager {
         return expiredOrders;
     }
 
+    // Stage Timer methods
+    public float getStageTimeRemaining() {
+        return stageTimeRemaining;
+    }
+
+    public boolean isStageTimeUp() {
+        return stageTimeRemaining <= 0;
+    }
+
+    public void startStageTimer() {
+        stageTimerRunning = true;
+        System.out.println("[STAGE TIMER] Started: 3 minutes");
+    }
+
+    public void stopStageTimer() {
+        stageTimerRunning = false;
+        System.out.println("[STAGE TIMER] Stopped at: " + formatTime(stageTimeRemaining));
+    }
+
+    public String getFormattedStageTime() {
+        return formatTime(stageTimeRemaining);
+    }
+
+    private String formatTime(float seconds) {
+        int minutes = (int) (seconds / 60);
+        int secs = (int) (seconds % 60);
+        return String.format("%d:%02d", minutes, secs);
+    }
+
     // Reset game state
     public void reset() {
         activeOrders.clear();
@@ -182,6 +225,8 @@ public class OrderManager {
         completedOrders = 0;
         expiredOrders = 0;
         orderCounter = 0;
+        stageTimeRemaining = STAGE_DURATION;
+        stageTimerRunning = false;
         System.out.println("[ORDER MANAGER] Reset!");
     }
 }
