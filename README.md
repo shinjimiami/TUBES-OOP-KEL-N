@@ -1,4 +1,4 @@
-![Header](https://github.com/shinjimiami/TUBES-OOP-KEL-N/blob/main/readmeassets/Header.png)
+![Header](https://github.com/shinjimiami/TUBES-OOP-KEL-N/blob/main/readmeAsset/header.png)
 
 
 #  **Tugas Besar Object Oriented Programming IF2010 K2 Kelompok N**
@@ -29,13 +29,6 @@ _______
 Technical Features:
 - GUI
 - Keyboard Utilization
-
-Game Features:
-- Plants vs Zombies Mechanics
-- Flag Wave
-- Pool Map
-- Night Time
-- Easter Eggs
 
 _______
 
