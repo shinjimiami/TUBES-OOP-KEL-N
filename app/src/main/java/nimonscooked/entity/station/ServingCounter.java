@@ -49,14 +49,10 @@ public class ServingCounter extends Station {
         if (returnQueue.isEmpty())
             return;
 
-        System.out.println("[SERVING] Update called. Queue size: " + returnQueue.size());
-
         Iterator<PlateReturnTimer> iterator = returnQueue.iterator();
         while (iterator.hasNext()) {
             PlateReturnTimer timer = iterator.next();
             timer.remainingTime -= timePassed;
-
-            System.out.println("[SERVING] Timer countdown: " + timer.remainingTime + "ms remaining");
 
             if (timer.remainingTime <= 0) {
                 System.out.println("[SERVING] Returning dirty plate to storage after 10 seconds");
