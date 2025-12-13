@@ -81,7 +81,7 @@ public class UI {
 
 		if (gp.pauseOverlayImage != null) {
 			g2.drawImage(gp.pauseControlsOverlayImage, 0, 0, gp.screenWidth, gp.screenHeight, null);
-		}  else {
+		} else {
 			System.out.println("WARNING: Controls Overlay Image is NULL. Drawing simple fallback.");
 		}
 	}
@@ -539,6 +539,43 @@ public class UI {
 					g2.fillRect(itemX, itemY, itemSize, itemSize);
 				}
 
+				// render isi plate
+				if (chef.getInventory() instanceof nimonscooked.entity.item.kitchenutensil.Plate) {
+					nimonscooked.entity.item.kitchenutensil.Plate plate = (nimonscooked.entity.item.kitchenutensil.Plate) chef
+							.getInventory();
+					nimonscooked.entity.item.dish.Dish dish = plate.getContainedDish();
+
+					if (dish != null && dish.getComponents() != null && !dish.getComponents().isEmpty()) {
+						List<nimonscooked.interfaces.Preparable> ingredients = dish.getComponents();
+						int ingredientSize = 16;
+						int startX = itemX + itemSize + 8;
+						int startY = itemY;
+
+						// gambar ingredient satu per satu
+						for (int idx = 0; idx < ingredients.size(); idx++) {
+							nimonscooked.interfaces.Preparable ingredient = ingredients.get(idx);
+							BufferedImage ingredientSprite = null;
+
+							if (ingredient instanceof nimonscooked.entity.item.Item) {
+								ingredientSprite = ((nimonscooked.entity.item.Item) ingredient).getSprite();
+							}
+
+							int ingY = startY + (idx * (ingredientSize + 2));
+
+							if (ingredientSprite != null) {
+								g2.drawImage(ingredientSprite, startX, ingY, ingredientSize, ingredientSize, null);
+							} else {
+								g2.setColor(new Color(200, 150, 100));
+								g2.fillRect(startX, ingY, ingredientSize, ingredientSize);
+							}
+
+							g2.setColor(Color.WHITE);
+							g2.setFont(new Font("daydream", Font.PLAIN, 6));
+							g2.drawString(ingredient.getName(), startX + ingredientSize + 3, ingY + 10);
+						}
+					}
+				}
+
 				g2.setColor(Color.WHITE);
 				g2.setFont(new Font("daydream", Font.PLAIN, 8));
 				String itemName = chef.getInventory().getName();
@@ -560,7 +597,8 @@ public class UI {
 
 		// g2.setColor(new Color(200, 200, 200));
 		// g2.setFont(new Font("daydream", Font.PLAIN, 6));
-		// g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, gp.screenHeight - 5);
+		// g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10,
+		// gp.screenHeight - 5);
 	}
 
 	private void drawStageTimer(Graphics2D g2) {
@@ -788,7 +826,7 @@ public class UI {
 
 		if (gp.startHowToPlay != null) {
 			g2.drawImage(gp.startHowToPlay, 0, 0, gp.screenWidth, gp.screenHeight, null);
-		}  else {
+		} else {
 			System.out.println("WARNING: Image is NULL. Drawing simple fallback.");
 		}
 	}
@@ -799,7 +837,7 @@ public class UI {
 
 		if (gp.startCredits != null) {
 			g2.drawImage(gp.startCredits, 0, 0, gp.screenWidth, gp.screenHeight, null);
-		}  else {
+		} else {
 			System.out.println("WARNING: Image is NULL. Drawing simple fallback.");
 		}
 	}

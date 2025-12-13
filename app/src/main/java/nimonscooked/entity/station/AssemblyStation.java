@@ -31,7 +31,7 @@ public class AssemblyStation extends Station {
     public void interact(Chef player) {
         Item item = player.getInventory();
 
-        System.out.println("[ASSEMBLY] === INTERACT DEBUG ===");
+        System.out.println("[ASSEMBLY] interact called");
         System.out.println("[ASSEMBLY] Player holding: "
                 + (item != null ? item.getName() + " (" + item.getClass().getSimpleName() + ")" : "NOTHING"));
         System.out.println("[ASSEMBLY] Station contains: " + (this.containedItem != null
