@@ -1,0 +1,394 @@
+{
+    "mapId": "map_d",
+    "name": "Complex Kitchen",
+    "dimensions": {
+        "width": 15,
+        "height": 11,
+        "tileSize": 80,
+        "pixelWidth": 1200,
+        "pixelHeight": 880
+    },
+    "backgroundImage": "/maps/map_d.png",
+    "stations": [
+        {
+            "type": "ingredient_storage",
+            "ingredient": "meat",
+            "position": {
+                "x": 1,
+                "y": 1
+            }
+        },
+        {
+            "type": "ingredient_storage",
+            "ingredient": "cheese",
+            "position": {
+                "x": 1,
+                "y": 2
+            }
+        },
+        {
+            "type": "ingredient_storage",
+            "ingredient": "bun",
+            "position": {
+                "x": 1,
+                "y": 3
+            }
+        },
+        {
+            "type": "ingredient_storage",
+            "ingredient": "tomato",
+            "position": {
+                "x": 1,
+                "y": 4
+            }
+        },
+        {
+            "type": "ingredient_storage",
+            "ingredient": "lettuce",
+            "position": {
+                "x": 1,
+                "y": 5
+            }
+        },
+        {
+            "type": "plate_storage",
+            "position": {
+                "x": 6,
+                "y": 2
+            }
+        },
+        {
+            "type": "plate_storage",
+            "position": {
+                "x": 10,
+                "y": 2
+            }
+        },
+        {
+            "type": "plate_storage",
+            "position": {
+                "x": 6,
+                "y": 6
+            }
+        },
+        {
+            "type": "plate_storage",
+            "position": {
+                "x": 10,
+                "y": 6
+            }
+        },
+        {
+            "type": "cooking_station",
+            "position": {
+                "x": 9,
+                "y": 7
+            }
+        },
+        {
+            "type": "serving_counter",
+            "position": {
+                "x": 1,
+                "y": 8
+            }
+        },
+        {
+            "type": "counter",
+            "positions": [
+                {
+                    "x": 6,
+                    "y": 1
+                },
+                {
+                    "x": 7,
+                    "y": 1
+                },
+                {
+                    "x": 8,
+                    "y": 1
+                },
+                {
+                    "x": 9,
+                    "y": 1
+                },
+                {
+                    "x": 10,
+                    "y": 1
+                },
+                {
+                    "x": 11,
+                    "y": 1
+                },
+                {
+                    "x": 4,
+                    "y": 4
+                },
+                {
+                    "x": 12,
+                    "y": 4
+                },
+                {
+                    "x": 4,
+                    "y": 7
+                },
+                {
+                    "x": 5,
+                    "y": 7
+                },
+                {
+                    "x": 6,
+                    "y": 7
+                },
+                {
+                    "x": 7,
+                    "y": 7
+                },
+                {
+                    "x": 8,
+                    "y": 7
+                },
+                {
+                    "x": 10,
+                    "y": 7
+                },
+                {
+                    "x": 11,
+                    "y": 7
+                },
+                {
+                    "x": 12,
+                    "y": 7
+                }
+            ]
+        }
+    ],
+    "decorations": [
+        {
+            "type": "tree",
+            "position": {
+                "x": 3,
+                "y": 2
+            }
+        },
+        {
+            "type": "tree",
+            "position": {
+                "x": 11,
+                "y": 2
+            }
+        }
+    ],
+    "collisionMap": [
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            1,
+            3,
+            1,
+            4,
+            2,
+            1,
+            1,
+            1,
+            2,
+            1,
+            3,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            4,
+            2,
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            1,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        [
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4
+        ],
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    ],
+    "collisionLegend": {
+        "0": "walkable (floor)",
+        "1": "wall (collision)",
+        "2": "station (interactive)",
+        "3": "decoration (collision)",
+        "4": "door (walkable)"
+    },
+    "spawnPoints": {
+        "chef1": {
+            "x": 7,
+            "y": 4
+        },
+        "chef2": {
+            "x": 8,
+            "y": 4
+        }
+    },
+    "notes": [
+        "Based on screenshot showing complex kitchen with ingredient boxes on left",
+        "Multiple plate stations for team coordination",
+        "Central cooking area with counter workspace",
+        "Delivery window at bottom left",
+        "Large open floor area for chef movement"
+    ]
+}

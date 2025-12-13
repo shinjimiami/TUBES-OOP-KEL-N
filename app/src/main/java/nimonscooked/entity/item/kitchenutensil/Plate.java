@@ -1,7 +1,56 @@
 package nimonscooked.entity.item.kitchenutensil;
 
+import nimonscooked.main.GamePanel;
+import nimonscooked.entity.item.dish.Dish;
+import nimonscooked.interfaces.Preparable;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Plate extends KitchenUtensils {
-    public Plate(String id, float x, float y) {
-        super(id, "Plate", x, y);
+    private boolean isDirty = false;
+    private Dish dish;
+
+    public Plate(GamePanel gp) {
+        super(gp, new ArrayList<Preparable>());
+        name = "Plate";
+        down1 = setup("/items/kitchen_utensils/plate");
+        this.dish = new Dish(gp);
+    }
+
+    @Override
+    public List<Preparable> getContents() {
+        return contents;
+    }
+
+    public void removeContents() {
+        contents.clear();
+        dish.clearDish();
+    }
+
+    public Dish getContainedDish() {
+        return dish;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.isDirty = dirty;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    /**
+     * Mencuci piring - mengubah status menjadi bersih dan menghapus isi dish
+     */
+    public void wash() {
+        this.isDirty = false;
+        clearDish();
+        System.out.println("[PLATE] Piring telah dicuci dan bersih.");
+    }
+
+    public void clearDish() {
+        if (dish != null) {
+            dish.clearDish();
+        }
     }
 }

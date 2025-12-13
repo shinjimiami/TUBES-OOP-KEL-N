@@ -4,69 +4,172 @@ import nimonscooked.entity.station.Station;
 import nimonscooked.interfaces.Preparable;
 import nimonscooked.interfaces.CookingDevice;
 import nimonscooked.enums.IngredientState;
-import javax.swing.Timer;
+import nimonscooked.entity.item.kitchenutensil.FryingPan;
+import nimonscooked.entity.Chef;
+import nimonscooked.main.GamePanel;
+
+import java.util.List;
 
 // berfungsi untuk memasak ingredient yang dapat dimasak
 // hanya bisa mulai apabila sudah ada fryingpan di cooking station
 public class CookingStation extends Station {
-    private final int cookingDuration = 15000;
-    private final int burntDuration = 25000;
-    private final int interval = 1000; //buat UI nya nanti
-    
-    private Timer cookingTimer;
-    private int cookingStartTime = 0;
-    private Preparable currentItem;
+    private final int cookingDuration = 12000; // 12 seconds to COOKED (was 15s)
+    private final int burntDuration = 24000;
+    private long cookingStartTime = 0;
+    private boolean isCooking = false;
 
-    public CookingStation(String id, float x, float y) {
-        super(id, "Cooking Station", x, y);
+    public CookingStation(GamePanel gp) {
+        super(gp);
+        this.name = "Cooking Station";
+
+        // spawn frying pan di station
+        this.containedItem = new FryingPan(gp);
+
+        if (gp != null) {
+            down1 = setup("/stations/cooking_station");
+            int tilesWide = 1;
+            int tilesHigh = 1;
+            this.imageWidth = gp.tileSize * tilesWide;
+            this.imageHeight = gp.tileSize * tilesHigh;
+            solidArea = new java.awt.Rectangle(0, 0, this.imageWidth, this.imageHeight);
+            solidAreaDefaultX = solidArea.x;
+            solidAreaDefaultY = solidArea.y;
+        }
     }
 
     @Override
-    public void interact(ChefPlayer chefPlayer) {
-        if(this.containedItem == null && chefPlayer.getHeldItem() != null){
-            super.placeItem(chefPlayer.takeItem());
-            startCookingTimer();
-        } else if(chefPlayer.getHeldItem() == null && this.containedItem != null){
-            stopCookingTimer();
-            chefPlayer.placeItem(this.takeItem());
+    public void interact(Chef player) {
+        System.out.println("[COOKING INTERACT] Player inventory: " +
+                (player.getInventory() != null ? player.getInventory().getName() : "EMPTY"));
+        System.out.println("[COOKING INTERACT] Station contains: " +
+                (this.containedItem != null ? this.containedItem.getName() : "EMPTY"));
+
+        // Menaruh FryingPan ke cooking station
+        if (this.containedItem == null && player.getInventory() instanceof CookingDevice) {
+            super.placeItem(player.getInventory());
+            player.setInventory(null);
+            System.out.println("[COOKING INTERACT] ✓ Placed FryingPan on station");
         }
-    }
-
-    private void startCookingTimer() {
-        stopCookingTimer();
-
-        if(!(this.containedItem instanceof CookingDevice)){
-            return;
-        }
-
-        CookingDevice cookingDevice = (CookingDevice) this.containedItem;
-        Preparable itemToCook = cookingDevice.getFirstContent();
-
-        if(itemToCook == null || !itemToCook.canBeCooked()){
-            return;
-        }
-
-        this.currentItem = itemToCook;
-
-        cookingTimer = new Timer(interval, e -> {
-            cookingStartTime += interval;
-
-            if(cookingStartTime >= burntDuration){
-                currentItem.cook(); 
-                stopCookingTimer();
-            } else if(cookingStartTime >= cookingDuration){
-                currentItem.cook();
+        // Mengambil FryingPan dari cooking station
+        else if (player.getInventory() == null && this.containedItem != null) {
+            // Stop cooking jika sedang cooking
+            if (isCooking) {
+                stopCooking();
+                System.out.println("[COOKING INTERACT] Stopped cooking because item was taken");
             }
-        });
-
-        cookingTimer.start();
-    }
-
-    private void stopCookingTimer() {
-        if (cookingTimer != null && cookingTimer.isRunning()) {
-            cookingTimer.stop();
-            cookingStartTime = 0;
+            player.setInventory(super.takeItem());
+            System.out.println("[COOKING INTERACT] Took FryingPan from station");
+        } else {
+            System.out.println("[COOKING INTERACT] Cannot interact - conditions not met");
         }
     }
-    
+
+    // buat di gamepanel
+    public void update(long currentTime) {
+        if (!isCooking || getContainedItem() == null)
+            return;
+
+        if (!(getContainedItem() instanceof CookingDevice))
+            return;
+
+        CookingDevice device = (CookingDevice) getContainedItem();
+        Preparable item = device.getFirstIngredient();
+
+        if (item == null)
+            return;
+
+        long elapsedTime = currentTime - cookingStartTime;
+
+        // Debug: Log progress setiap frame
+        if (elapsedTime % 3000 < 100) { // Log setiap ~3 detik
+            System.out.println("[COOKING] DEBUG: Elapsed = " + (elapsedTime / 1000) + "s, State = " + item.getState() +
+                    ", CookDuration = " + (cookingDuration / 1000) + "s, BurntDuration = " + (burntDuration / 1000)
+                    + "s");
+        }
+        IngredientState currentItemState = item.getState();
+
+        // State transitions berdasarkan waktu
+        if (elapsedTime >= burntDuration) {
+            // Burned state - cook() lagi setelah COOKED
+            if (currentItemState == IngredientState.COOKED) {
+                item.cook(); // COOKED -> BURNED
+                System.out.println("[COOKING] Item BURNED");
+                System.out.println("[COOKING] DEBUG: FryingPan contents after BURNED: " + device.getContents().size());
+            }
+        } else if (elapsedTime >= cookingDuration) {
+            // Cooked state - cook() pertama kali dari CHOPPED atau COOKING
+            if (currentItemState == IngredientState.CHOPPED || currentItemState == IngredientState.COOKING) {
+                item.cook(); // CHOPPED/COOKING -> COOKED
+                System.out.println("[COOKING] Item COOKED - ready to serve!");
+                System.out.println("[COOKING] DEBUG: FryingPan contents after COOKED: " + device.getContents().size());
+            }
+        } else if (elapsedTime > 0) {
+            // Cooking state (in progress) - perlu casting ke Ingredient untuk set COOKING
+            // state
+            if (currentItemState == IngredientState.CHOPPED || currentItemState == IngredientState.RAW) {
+                if (item instanceof nimonscooked.entity.item.ingredient.Ingredient) {
+                    ((nimonscooked.entity.item.ingredient.Ingredient) item).setCurrentState(IngredientState.COOKING);
+                    // Log hanya setiap 5 detik untuk mengurangi spam
+                    if (elapsedTime % 5000 < 1000) {
+                        System.out.println("[COOKING] Progress: " + (elapsedTime / 1000) + "s / "
+                                + (cookingDuration / 1000) + "s");
+                    }
+                }
+            }
+        }
+    }
+
+    public void startCooking(long currentTime) {
+        if (this.isCooking) {
+            System.out.println("[COOKING] Process already running");
+            return;
+        }
+
+        if (getContainedItem() == null || !(getContainedItem() instanceof CookingDevice)) {
+            System.out.println("[COOKING] Invalid item");
+            return;
+        }
+
+        CookingDevice device = (CookingDevice) getContainedItem();
+        Preparable item = device.getFirstIngredient();
+
+        if (item == null) {
+            System.out.println("[COOKING] Cooking device is empty");
+            return;
+        }
+
+        if (!item.canBeCooked()) {
+            System.out.println("[COOKING] Item cannot be cooked");
+            return;
+        }
+
+        // Hanya bisa mulai cooking jika item dalam state RAW atau CHOPPED
+        IngredientState itemState = item.getState();
+        System.out.println("[COOKING] Item state = " + itemState + ", Name = " + item.getName());
+
+        if (itemState == IngredientState.RAW || itemState == IngredientState.CHOPPED) {
+            this.isCooking = true;
+            this.cookingStartTime = currentTime;
+            device.startCooking();
+            System.out.println("[COOKING]  Started cooking " + item.getName() + " (state: " + itemState + ")");
+        } else {
+            System.out.println("[COOKING]  Cannot cook - wrong state: " + itemState);
+        }
+    }
+
+    public void stopCooking() {
+        this.isCooking = false;
+        ((CookingDevice) getContainedItem()).stopCooking();
+    }
+
+    public boolean isCooking() {
+        return isCooking;
+    }
+
+    public float getCookingProgress() {
+        if (!isCooking || cookingStartTime == 0)
+            return 0;
+        long elapsed = System.currentTimeMillis() - cookingStartTime;
+        return Math.min(1.0f, (float) elapsed / cookingDuration);
+    }
 }

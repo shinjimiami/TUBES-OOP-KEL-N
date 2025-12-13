@@ -1,0 +1,59 @@
+package nimonscooked.action;
+
+import nimonscooked.entity.Chef;
+import nimonscooked.entity.station.Station;
+import nimonscooked.enums.ChefStatus;
+import nimonscooked.object.GameMap;
+
+public class InteractCommand implements Command {
+    private final GameMap map;
+
+    public InteractCommand(GameMap map) {
+        this.map = map;
+    }
+
+    @Override
+    public void execute(Chef chef) {
+        // 1. Validasi Status Chef
+        if (chef.getCurrentAction() == ChefStatus.BUSY) {
+            System.out.println("[INTERACT]" + chef.getName() + " is busy!");
+            return;
+        }
+
+        // 2. Hitung Posisi Depan Chef
+        int targetX = chef.getPosition().getX();
+        int targetY = chef.getPosition().getY();
+
+        switch (chef.getDirection()) {
+            case UP -> targetY--;
+            case DOWN -> targetY++;
+            case LEFT -> targetX--;
+            case RIGHT -> targetX++;
+        }
+
+        // 2.5. Check if there's an item on the floor at target position
+        if (map.hasItemOnFloor(targetX, targetY)) {
+            if (chef.getInventory() == null) {
+                var floorItem = map.pickupItemFromFloor(targetX, targetY);
+                chef.setInventory(floorItem);
+                System.out.println("[INTERACT] " + chef.getName() + " picked up " + floorItem.getName()
+                        + " from floor at (" + targetX + ", " + targetY + ")");
+                return;
+            } else {
+                System.out
+                        .println("[INTERACT] " + chef.getName() + "'s hands are full! Cannot pick up item from floor.");
+                return;
+            }
+        }
+
+        // 3. Ambil Objek Station dari Map
+        Station targetStation = map.getStationAt(targetX, targetY);
+
+        if (targetStation != null) {
+            System.out.println("[INTERACT] " + chef.getName() + " interacting with " + targetStation.name);
+            targetStation.interact(chef);
+        } else {
+            System.out.println("[INTERACT] Nothing to interact with at (" + targetX + "," + targetY + ")");
+        }
+    }
+}
