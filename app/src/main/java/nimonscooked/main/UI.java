@@ -417,14 +417,14 @@ public class UI {
 			int textY = orderPanelY + 15;
 
 			g2.setColor(Color.WHITE);
-			g2.setFont(new Font("daydream", Font.PLAIN, 6));
+			g2.setFont(new Font("arial", Font.PLAIN, 10));
 			g2.drawString("#" + order.getId(), textX, textY);
 
-			g2.setFont(new Font("daydream", Font.PLAIN, 4));
+			g2.setFont(new Font("arial", Font.PLAIN, 8));
 			String recipeName = order.getRecipe().getName().replace(" Burger", "");
 			g2.drawString(recipeName, textX + 20, textY);
 
-			g2.setFont(new Font("daydream", Font.PLAIN, 4));
+			g2.setFont(new Font("arial", Font.PLAIN, 8));
 			g2.setColor(new Color(200, 200, 200));
 
 			StringBuilder ingredients = new StringBuilder();
@@ -558,9 +558,9 @@ public class UI {
 			}
 		}
 
-		g2.setColor(new Color(200, 200, 200));
-		g2.setFont(new Font("daydream", Font.PLAIN, 6));
-		g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, gp.screenHeight - 5);
+		// g2.setColor(new Color(200, 200, 200));
+		// g2.setFont(new Font("daydream", Font.PLAIN, 6));
+		// g2.drawString("WASD: Move | V: Interact | TAB: Switch Chef", 10, gp.screenHeight - 5);
 	}
 
 	private void drawStageTimer(Graphics2D g2) {
