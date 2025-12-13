@@ -1,6 +1,8 @@
 package nimonscooked.main;
 
 import nimonscooked.entity.Chef;
+import nimonscooked.entity.item.kitchenutensil.FryingPan;
+import nimonscooked.entity.station.CookingStation;
 import nimonscooked.entity.station.Station;
 
 public class SetupGame {
@@ -51,6 +53,28 @@ public class SetupGame {
         gp.orderManager.generateOrder();
         gp.lastOrderTime = System.currentTimeMillis();
 
-        System.out.println("[SETUP] Game reset complete - stations cleared, timer restarted");
+        int placed = 0;
+        for (int row = 0; row < gp.gameMap.getRows(); row++) {
+            for (int col = 0; col < gp.gameMap.getCols(); col++) {
+                Station s = gp.gameMap.getStationAt(col, row);
+                if (s instanceof CookingStation) {
+                    if (s.getContainedItem() instanceof FryingPan) {
+                        placed++;
+                        continue;
+                    }
+
+                    if (s.getContainedItem() != null) {
+                        s.takeItem();
+                    }
+
+                    FryingPan pan = new FryingPan(gp);
+                    s.placeItem(pan);
+                    placed++;
+                    System.out.println("[SETUP] Placed FryingPan on cooking station at (" + col + "," + row + ")");
+                }
+            }
+        }
+
+        System.out.println("[SETUP] Game reset complete - placed pans: " + placed);
     }
 }
