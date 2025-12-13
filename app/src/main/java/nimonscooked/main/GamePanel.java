@@ -286,7 +286,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     cookingStation.update(currentTime);
                 } else if (station instanceof nimonscooked.entity.station.ServingCounter) {
                     nimonscooked.entity.station.ServingCounter servingCounter = (nimonscooked.entity.station.ServingCounter) station;
-                    servingCounter.updateDirtyPlate(16); // ~16ms per frame at 60 FPS
+                    servingCounter.updateDirtyPlate(1000); // Called every 1 second from updateStations timer
                 }
             }
         }
@@ -407,7 +407,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         ui.drawHowToPlay(g2);
     }
 
-    private void drawCredits(Graphics2D g2){
+    private void drawCredits(Graphics2D g2) {
         ui.drawCredits(g2);
     }
 
