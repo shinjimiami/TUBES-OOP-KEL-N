@@ -37,7 +37,7 @@ public class AssetSetter {
         g.setColor(new Color(180, 180, 180));
         g.fillRect(0, 0, size, size);
         g.setColor(new Color(80, 80, 80));
-        g.setFont(new Font("Monospaced", Font.BOLD, Math.max(10, size / 4)));
+        g.setFont(new Font("daydream", Font.PLAIN, Math.max(10, size / 4)));
         int w = g.getFontMetrics().stringWidth(text);
         g.drawString(text, Math.max(2, (size - w) / 2), size / 2 + 4);
         g.dispose();
@@ -52,13 +52,16 @@ public class AssetSetter {
             gp.loseScreenBackground = load("/menu/lose_screen.png");
             gp.mapBackground = load("/maps/map_d.png");
             gp.pauseOverlayImage = load("/menu/pause.png");
+            gp.pauseControlsOverlayImage = load("/menu/pause_controls.png");
+            gp.startHowToPlay = load("/menu/start_howtoplay.png");
+            gp.startCredits = load("/menu/start_credits.png");
 
             // Load timer background (optional - will use default if not found)
             gp.timerBackground = load("/ui/timer_background.png");
             if (gp.timerBackground != null) {
-                System.out.println("[UI] ✅ Timer background loaded successfully!");
+                System.out.println("[UI]  Timer background loaded successfully!");
             } else {
-                System.out.println("[UI] ℹ️ No custom timer background - using default box");
+                System.out.println("[UI]  No custom timer background - using default box");
             }
 
             // Load map C thumbnail for stage select

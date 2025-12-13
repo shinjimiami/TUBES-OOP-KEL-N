@@ -6,7 +6,7 @@
 **Purpose:** Full background for stage selection screen
 
 ### Design Elements:
-- **Top:** "SELECT STAGE" title text (large, bold font)
+- **Top:** "SELECT STAGE" title text (large, PLAIN font)
 - **Center:** Map preview frame/card area
   - Map name display area (e.g., "MAP TYPE C BURGER MAP")
   - Map thumbnail/preview (showing kitchen layout)
@@ -45,7 +45,7 @@
 # Main stage select background
 convert -size 672x570 xc:'#F5E6D3' \
   -gravity center \
-  -fill '#8B4513' -pointsize 48 -font Arial-Bold \
+  -fill '#8B4513' -pointsize 48 -font daydream-PLAIN \
   -annotate +0-200 'SELECT STAGE' \
   -fill '#FFE4E1' \
   -draw 'roundrectangle 136,120 536,450 20,20' \
@@ -74,7 +74,7 @@ draw = ImageDraw.Draw(img)
 
 # Title
 draw.text((336, 50), 'SELECT STAGE', fill='#8B4513', anchor='mm', 
-          font=ImageFont.truetype('Arial', 48))
+          font=ImageFont.truetype('daydream', 48))
 
 # Map frame
 draw.rounded_rectangle([(136, 120), (536, 450)], radius=20, 
@@ -82,11 +82,11 @@ draw.rounded_rectangle([(136, 120), (536, 450)], radius=20,
 
 # Map name
 draw.text((336, 280), 'MAP TYPE C\nBURGER MAP', fill='#8B4513', 
-          anchor='mm', font=ImageFont.truetype('Arial', 24), align='center')
+          anchor='mm', font=ImageFont.truetype('daydream', 24), align='center')
 
 # Instructions
 draw.text((336, 530), 'USE WS TO NAVIGATE | ENTER/SPACE TO SELECT | ESC TO GO BACK',
-          fill='#654321', anchor='mm', font=ImageFont.truetype('Arial', 12))
+          fill='#654321', anchor='mm', font=ImageFont.truetype('daydream', 12))
 
 img.save('menu/stage_select.png')
 
@@ -94,7 +94,7 @@ img.save('menu/stage_select.png')
 thumb = Image.new('RGB', (256, 256), '#DEB887')
 draw_thumb = ImageDraw.Draw(thumb)
 draw_thumb.text((128, 128), 'MAP\nC', fill='#8B4513', anchor='mm',
-                font=ImageFont.truetype('Arial', 72), align='center')
+                font=ImageFont.truetype('daydream', 72), align='center')
 thumb.save('maps/thumbnails/map_c_thumbnail.png')
 ```
 

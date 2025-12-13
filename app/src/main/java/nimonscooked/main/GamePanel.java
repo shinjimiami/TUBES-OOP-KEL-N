@@ -61,6 +61,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     BufferedImage pauseOverlayImage;
     BufferedImage timerBackground; // Timer box background image
     BufferedImage mapCThumbnail; // Thumbnail for map C in stage select
+    BufferedImage pauseControlsOverlayImage;
+    BufferedImage startHowToPlay;
+    BufferedImage startCredits;
 
     // Warna Pastel Lantai
     Color pastelOrange = new Color(255, 223, 186);
@@ -96,6 +99,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     enum GameState {
         MENU, // Main menu
         HOW_TO_PLAY, // Instructions screen
+        CREDITS,
         STAGE_SELECT, // Stage selection
         PLAYING, // In-game
         WIN, // Win screen
@@ -107,8 +111,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private final int LOSE_SCORE = -10; // Lose condition
 
     // Menu navigation
-    int selectedMenuIndex = 0; // 0=Start, 1=How to Play, 2=Exit
-    int maxMenuIndex = 2;
+    int selectedMenuIndex = 0; // 0=Start, 1=How to Play, 2=Credits, 3=Exit
+    int maxMenuIndex = 3;
 
     /*
      * -------------------------------------------------- KONSTRUKTOR DAN
@@ -305,6 +309,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             case HOW_TO_PLAY:
                 drawHowToPlay(g2);
                 break;
+            case CREDITS:
+                drawCredits(g2);
+                break;
             case STAGE_SELECT:
                 drawStageSelect(g2);
                 break;
@@ -342,6 +349,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 sound.playSE(Sound.GAME_OVER);
                 break;
             case HOW_TO_PLAY:
+                sound.playMusic(Sound.TITLE);
+            case CREDITS:
+                sound.playMusic(Sound.TITLE);
             case STAGE_SELECT:
                 sound.playMusic(Sound.LEVEL);
                 break;
@@ -397,6 +407,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         ui.drawHowToPlay(g2);
     }
 
+    private void drawCredits(Graphics2D g2){
+        ui.drawCredits(g2);
+    }
+
     private void drawStageSelect(Graphics2D g2) {
         ui.drawStageSelect(g2);
     }
@@ -436,7 +450,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                         gameState = GameState.HOW_TO_PLAY;
                         playMusicByState();
                         break;
-                    case 2: // Exit
+                    case 2:
+                        gameState = GameState.CREDITS;
+                        playMusicByState();
+                        break;
+                    case 3: // Exit
                         System.exit(0);
                         break;
                 }
@@ -447,6 +465,18 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         // Handle HOW_TO_PLAY state
         if (gameState == GameState.HOW_TO_PLAY) {
+            if (keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
+                gameState = GameState.MENU;
+                selectedMenuIndex = 0;
+                maxMenuIndex = 2;
+                playSoundEffect(Sound.LEVEL); // SE: Kembali
+                playMusicByState();
+                repaint();
+            }
+            return;
+        }
+
+        if (gameState == GameState.CREDITS) {
             if (keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE) {
                 gameState = GameState.MENU;
                 selectedMenuIndex = 0;

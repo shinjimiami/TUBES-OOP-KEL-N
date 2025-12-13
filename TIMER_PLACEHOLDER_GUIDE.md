@@ -175,7 +175,7 @@ Screen Layout:
 **Timer text akan selalu di-render di atas gambar:**
 
 ```java
-Font: Monospaced, Bold, 18px
+Font: daydream, PLAIN, 18px
 Color: Dynamic based on time
   - Green  (timeRemaining > 90s)
   - Yellow (30s < time ≤ 90s)

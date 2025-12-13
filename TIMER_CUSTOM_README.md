@@ -38,7 +38,7 @@ Position: Pojok kiri atas layar
 ### **Text Safe Area:**
 Pastikan area tengah (80×20px) cukup terang/gelap untuk text:
 - Text akan tampil dengan warna: **Green / Yellow / Red**
-- Font: **Monospaced Bold 18px**
+- Font: **daydream PLAIN 18px**
 - Position: **Centered**
 
 ---
