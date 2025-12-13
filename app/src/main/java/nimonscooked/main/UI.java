@@ -539,7 +539,7 @@ public class UI {
 					g2.fillRect(itemX, itemY, itemSize, itemSize);
 				}
 
-				// === PLATE CONTENTS VISUALIZATION ===
+				// render isi plate
 				if (chef.getInventory() instanceof nimonscooked.entity.item.kitchenutensil.Plate) {
 					nimonscooked.entity.item.kitchenutensil.Plate plate = (nimonscooked.entity.item.kitchenutensil.Plate) chef
 							.getInventory();
@@ -551,19 +551,17 @@ public class UI {
 						int startX = itemX + itemSize + 8;
 						int startY = itemY;
 
-						// Draw each ingredient vertically stacked
+						// gambar ingredient satu per satu
 						for (int idx = 0; idx < ingredients.size(); idx++) {
 							nimonscooked.interfaces.Preparable ingredient = ingredients.get(idx);
 							BufferedImage ingredientSprite = null;
 
-							// Get sprite from Preparable (cast to Item to access getSprite)
 							if (ingredient instanceof nimonscooked.entity.item.Item) {
 								ingredientSprite = ((nimonscooked.entity.item.Item) ingredient).getSprite();
 							}
 
 							int ingY = startY + (idx * (ingredientSize + 2));
 
-							// Draw mini ingredient sprite
 							if (ingredientSprite != null) {
 								g2.drawImage(ingredientSprite, startX, ingY, ingredientSize, ingredientSize, null);
 							} else {
@@ -571,7 +569,6 @@ public class UI {
 								g2.fillRect(startX, ingY, ingredientSize, ingredientSize);
 							}
 
-							// Draw ingredient name next to sprite
 							g2.setColor(Color.WHITE);
 							g2.setFont(new Font("daydream", Font.PLAIN, 6));
 							g2.drawString(ingredient.getName(), startX + ingredientSize + 3, ingY + 10);

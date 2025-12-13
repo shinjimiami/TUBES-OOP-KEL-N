@@ -146,7 +146,7 @@ public class OrderManager implements GameSubject {
         }
     }
 
-    // === CORE LOGIC: Validasi Piring ===
+    // validasi dish dengan order
     public boolean validateDish(List<Preparable> plateContents) {
         if (plateContents == null || plateContents.isEmpty())
             return false;

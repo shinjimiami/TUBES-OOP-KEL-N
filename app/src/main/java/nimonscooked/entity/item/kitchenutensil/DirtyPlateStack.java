@@ -17,7 +17,6 @@ public class DirtyPlateStack extends Item {
         super(gp);
         this.name = "Tumpukan Piring Kotor";
         this.dirtyPlates = new LinkedList<>();
-        // Use the plate image for visualization
         down1 = setup("/items/kitchen_utensils/plate");
     }
 

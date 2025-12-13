@@ -22,6 +22,9 @@ public class CookingStation extends Station {
         super(gp);
         this.name = "Cooking Station";
 
+        // spawn frying pan di station
+        this.containedItem = new FryingPan(gp);
+
         if (gp != null) {
             down1 = setup("/stations/cooking_station");
             int tilesWide = 1;
@@ -117,7 +120,7 @@ public class CookingStation extends Station {
     }
 
     public void startCooking(long currentTime) {
-        if(this.isCooking){
+        if (this.isCooking) {
             System.out.println("[COOKING] Process already running");
             return;
         }
@@ -127,7 +130,6 @@ public class CookingStation extends Station {
             return;
         }
 
-
         CookingDevice device = (CookingDevice) getContainedItem();
         Preparable item = device.getFirstIngredient();
 
@@ -136,7 +138,7 @@ public class CookingStation extends Station {
             return;
         }
 
-        if(!item.canBeCooked()){
+        if (!item.canBeCooked()) {
             System.out.println("[COOKING] Item cannot be cooked");
             return;
         }
